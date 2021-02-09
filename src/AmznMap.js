@@ -9,14 +9,17 @@ import {Button} from "@material-ui/core";
 import Location from "aws-sdk/clients/location"
 import './AmznMap.css'
 
-
-Amplify.configure(amplifyConfig);
-console.log(process.env.MAP_NAME)
-const mapName = "newMap";
-const placeIndex = "MyPlaceIndex";
+let map;
+var marker;
 var AWS = require("aws-sdk");
+
+const mapName = process.env.REACT_APP_MAP_NAME;
+const placeIndex = process.env.REACT_APP_PLACE_INDEX_NAME;
 const identityPoolId = amplifyConfig.aws_cognito_identity_pool_id;
+
 AWS.config.region = amplifyConfig.aws_project_region;
+Amplify.configure(amplifyConfig);
+
 const credentials = new AWS.CognitoIdentityCredentials({
     IdentityPoolId: identityPoolId,
 });
@@ -26,7 +29,6 @@ const locationService = new AWS.Location({
 });
 
 
-let map;
 function transformRequest(url, resourceType) {
     if (resourceType === "Style" && !url.includes("://")) {
         // resolve to an AWS URL
@@ -48,18 +50,16 @@ function transformRequest(url, resourceType) {
     return { url: url || "" };
 
 }
-let sidebar;
 function searchAndUpdate(map, text){
-    let longtitude = -123.11335999999994;
+    let longitude = -123.11335999999994;
     let latitude = 49.260380000000055;
-    console.log(text)
     if(text===""){
         console.log("No input text");
         return;
     }
     if ("geolocation" in navigator) {
         navigator.geolocation.getCurrentPosition(position => {
-            longtitude = position.coords.longitude
+            longitude = position.coords.longitude
             latitude = position.coords.latitude
         })};
     locationService.searchPlaceIndexForText(
@@ -67,21 +67,23 @@ function searchAndUpdate(map, text){
             IndexName: placeIndex,
             Text: text,
             MaxResults: 1,
-            BiasPosition: [longtitude, latitude]
+            BiasPosition: [longitude, latitude]
         },
         (err, response) => {
             if (err) {
                 console.error(err);
             }
             if (response) {
-                longtitude = response.Summary.ResultBBox[0]
+                longitude = response.Summary.ResultBBox[0]
                 latitude = response.Summary.ResultBBox[1]
+                marker.setLngLat([longitude, latitude])
+                marker.addTo(map)
                 map.flyTo({
-                    center: [longtitude, latitude],
+                    center: [longitude, latitude],
                     essential: true,
                     zoom: 12,
                 });
-                console.log(longtitude)
+                console.log(longitude)
                 console.log(latitude)
 
             }
@@ -112,7 +114,6 @@ class AmznMap extends Component{
 
     async componentDidMount(){
         await credentials.getPromise();
-
         // actually initialize the map
         map = new mapboxgl.Map({
             container: this.container,
@@ -128,17 +129,15 @@ class AmznMap extends Component{
                 positionOptions: {
                     enableHighAccuracy: true
                 },
-                trackUserLocation: true
+                trackUserLocation: true,
             })
         );
-        var marker = new mapboxgl.Marker()
-            .setLngLat([-123.1187, 49.2819])
-            .addTo(map);
 
-
+        marker = new mapboxgl.Marker()
 
         initialMapLocation()
     }
+
     updateInputText=(e)=>{
         this.setState({
             text:e.target.value
@@ -152,13 +151,12 @@ class AmznMap extends Component{
         return (
             <div id = {'mapPage'}>
                 <div id={"sbContainer"}>
-                    <TextField id="sbInput" label="Enter location" type="outlined" value={this.state.text} onChange={e=>this.updateInputText(e)}/>
-                    <Button id={'searchBtn'} variant="outlined" color="secondary" onClick={this.handleSubmit} >
+                        <TextField id="sbInput" label="Enter location" type="outlined" value={this.state.text} onChange={e=>this.updateInputText(e)}/>
+                        <Button id={'searchBtn'} variant="outlined" color="secondary" onClick={this.handleSubmit} >
                         Search
-                    </Button>
-                </div>
-        <div className='Map' ref={(x) => { this.container = x }}/>
-
+                        </Button>
+                    </div>
+                <div className='Map' ref={(x) => { this.container = x }}/>
             </div>
         )
     }
