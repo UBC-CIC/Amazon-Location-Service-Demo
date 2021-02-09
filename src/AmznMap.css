@@ -1,5 +1,18 @@
 .Map {
-    position: relative;
+    position: fixed;
     width: 100%;
-    height: 800px;
+    height: 2000px;
+    max-height: 100%;
+}
+#sbContainer{
+    margin: 20px;
+}
+#sbInput{
+    width: 300px;
+    margin: 5px;
+
+}
+
+#searchBtn{
+    margin: 20px;
 }

@@ -150,12 +150,15 @@ class AmznMap extends Component{
 
     render(){
         return (
-            <div>
-                <TextField id="sbInput" label="Enter location" type="outlined" value={this.state.text} onChange={e=>this.updateInputText(e)}/>
-                <Button id={'searchBtn'} variant="outlined" color="secondary" onClick={this.handleSubmit} >
-                    Search
-                </Button>
-                <div className='Map' ref={(x) => { this.container = x }}/>
+            <div id = {'mapPage'}>
+                <div id={"sbContainer"}>
+                    <TextField id="sbInput" label="Enter location" type="outlined" value={this.state.text} onChange={e=>this.updateInputText(e)}/>
+                    <Button id={'searchBtn'} variant="outlined" color="secondary" onClick={this.handleSubmit} >
+                        Search
+                    </Button>
+                </div>
+        <div className='Map' ref={(x) => { this.container = x }}/>
+
             </div>
         )
     }
