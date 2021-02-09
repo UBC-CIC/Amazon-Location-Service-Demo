@@ -25,7 +25,7 @@ This template uses Amazon Location Services to:
    1. Choose Manage Identity Pools
     2. Choose the identity pool that is being used for this amplify project
     3. Click edit identity pool in the top right corner
-    4. Under "Unauthenticated identities", click "Enable access to unauthenticated identities" checkbox
+    4. Under "Unauthenticated identities", check "Enable access to unauthenticated identities" checkbox
     5. Take a note the name of the unauthenticated IAM role attached to this Identity Pool
     
 7. Go to [AWS IAM Console](https://console.aws.amazon.com/iam/)
