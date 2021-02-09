@@ -1,70 +1,89 @@
-# Getting Started with Create React App
+#  Amazon Location Services Template - React.js
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+For future CIC projects that requires maps, we can use this repository as a template.
+This template uses Amazon Location Services to:
+1. Create a map source
+2. Geocoding/Reverse geocoding
 
-## Available Scripts
+## How to use
+1. Install dependencies using `npm install`
+2. Log into aws and initiate this project as an Amplify project: `amplify init`
+3. Add authentication to this project:
+   ```
+   amplify add auth
+   ? Do you want to use the default authentication and security configuration? Default configuration
+   ? How do you want users to be able to sign in? Username
+   ? Do you want to configure advanced settings?  No, I am done.
+   ```
+   
+4. To create map resource, follow the instructions [here](https://docs.aws.amazon.com/location/latest/developerguide/create-map-resource.html)
+   - Take a note of the map name
+5. To create a place index resource, follow the instructions [here](https://docs.aws.amazon.com/location/latest/developerguide/create-place-index-resource.html)
+    - Take a note of the place index name
 
-In the project directory, you can run:
+6. Go to [AWS Cognito Console](https://console.aws.amazon.com/cognito/home)
+   1. Choose Manage Identity Pools
+    2. Choose the identity pool that is being used for this amplify project
+    3. Click edit identity pool on the top right corner
+    4. Under unauthenticated access, click 'Enable access to unauthenticated identities' checkbox
+    5. Take a note the name of the unauthenticated IAM role attached to this Identity Pool
+    
+7. Go to [AWS IAM Console](https://console.aws.amazon.com/iam/)
+    1. Click Roles on the left panel
+    2. Click onto the role name noted from step 6.5
+    3. Now, we need to add 2 inline policies to this role
+    4. Map resource access policy
+    - Region: Region of the map resource
+    - accountID: 12 digit ID associated with your account
+    - MAPNAME: from step 4.1
+   ```
+    {
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "MapsReadOnly",
+            "Effect": "Allow",
+            "Action": [
+                "geo:GetMapStyleDescriptor",
+                "geo:GetMapGlyphs",
+                "geo:GetMapSprites",
+                "geo:GetMapTile"
+            ],
+            "Resource": "arn:aws:geo:region:accountID:map/MAPNAME"
+             }
+        ]
+   }
+   ```
+    5. Place index access policy
+    - Region: Region of the place index resource
+    - accountID: 12 digit ID associated with your account
+    - PLACEINDEXNAME: from step 5.1
+    ```
+   {
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "PlacesReadOnly",
+            "Effect": "Allow",
+            "Action": [
+                "geo:SearchPlaceIndex*"
+            ],
+            "Resource": "arn:aws:geo:region:accountID:place-index/PLACEINDEXNAME"
+            }
+        ]
+    }
+   ```
 
-### `npm start`
+8. Create local env file for map name and place index name
+    1. Under the root directory, create a file named .env
+    2. Replace the MAPNAME and PLACEINDEXNAME to the ones you created (from step 4.1 and 5.1):
+    ```
+   REACT_APP_MAP_NAME=MAPNAME
+   REACT_APP_PLACE_INDEX_NAME=PLACEINDEXNAME
+   ```
+   
+9. `npm start` to run the application you should a screen like follows:
+   <img src="./docs/images/map.png"  width="500"/>
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
 
-### `npm test`
-
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
-
-### `npm run build`
-
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
-
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
-
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
-
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
