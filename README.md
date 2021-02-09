@@ -24,18 +24,16 @@ This template uses Amazon Location Services to:
 6. Go to [AWS Cognito Console](https://console.aws.amazon.com/cognito/home)
    1. Choose Manage Identity Pools
     2. Choose the identity pool that is being used for this amplify project
-    3. Click edit identity pool on the top right corner
-    4. Under unauthenticated access, click 'Enable access to unauthenticated identities' checkbox
+    3. Click edit identity pool in the top right corner
+    4. Under "Unauthenticated identities", click "Enable access to unauthenticated identities" checkbox
     5. Take a note the name of the unauthenticated IAM role attached to this Identity Pool
     
 7. Go to [AWS IAM Console](https://console.aws.amazon.com/iam/)
     1. Click Roles on the left panel
     2. Click onto the role name noted from step 6.5
-    3. Now, we need to add 2 inline policies to this role
-    4. Map resource access policy
-    - Region: Region of the map resource
-    - accountID: 12 digit ID associated with your account
-    - MAPNAME: from step 4.1
+    3. Now, we need to add 2 inline policies to this role, click on "Add inline policy".
+       - Click onto the JSON tab
+       - Copy and paste the code below (allows us to access the map resource)
    ```
     {
     "Version": "2012-10-17",
@@ -49,15 +47,19 @@ This template uses Amazon Location Services to:
                 "geo:GetMapSprites",
                 "geo:GetMapTile"
             ],
-            "Resource": "arn:aws:geo:region:accountID:map/MAPNAME"
+            "Resource": "arn:aws:geo:REGION:ACCOUNTID:map/MAPNAME"
              }
         ]
    }
    ```
+            Note the last line of the code above, replace the following with your own information.
+            REGION: Region of the map resource
+            ACCOUNTID: 12 digit ID associated with your account
+            MAPNAME: from step 4.1
+   - click on 'review policy', give it a name, then click create policy.
     5. Place index access policy
-    - Region: Region of the place index resource
-    - accountID: 12 digit ID associated with your account
-    - PLACEINDEXNAME: from step 5.1
+         - Repeat step 7.3, but this time, use the code below and on the last line, replace 
+        PLACEINDEXNAME with the name in step 5.1
     ```
    {
     "Version": "2012-10-17",
@@ -68,22 +70,22 @@ This template uses Amazon Location Services to:
             "Action": [
                 "geo:SearchPlaceIndex*"
             ],
-            "Resource": "arn:aws:geo:region:accountID:place-index/PLACEINDEXNAME"
+            "Resource": "arn:aws:geo:REGION:ACCOUNTID:place-index/PLACEINDEXNAME"
             }
         ]
     }
    ```
 
-8. Create local env file for map name and place index name
+8. Create a local env file for map name and place index name
     1. Under the root directory, create a file named .env
-    2. Replace the MAPNAME and PLACEINDEXNAME to the ones you created (from step 4.1 and 5.1):
+    2. Copy the code below and replace MAPNAME and PLACEINDEXNAME with the names you created (from step 4.1 and 5.1):
     ```
    REACT_APP_MAP_NAME=MAPNAME
    REACT_APP_PLACE_INDEX_NAME=PLACEINDEXNAME
    ```
    
-9. `npm start` to run the application you should a screen like follows:
-   <img src="./docs/images/map.png"  width="500"/>
+9. `npm start` to run the application you should see a screen like this:
+   <img src="./docs/images/map.png"  width="800"/>
 
 
 
