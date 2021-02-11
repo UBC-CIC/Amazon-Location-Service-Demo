@@ -5,6 +5,12 @@ This template uses Amazon Location Services to:
 1. Create a map source
 2. Geocoding/Reverse geocoding
 
+###Pre-reqs
+Location service is only available in the regions below (As of Feb 10, 2021).
+<img src="./docs/images/region.png"  width="500"/>
+Make sure your sso profile is using one those regions.
+
+
 ## How to use
 1. Install dependencies using `npm install`
 2. Log into aws and initiate this project as an Amplify project: `amplify init`
