@@ -4,10 +4,12 @@ For future CIC projects that requires maps, we can use this repository as a temp
 This template uses Amazon Location Services to:
 1. Create a map source
 2. Geocoding/Reverse geocoding
+3. Display geofence
 
-###Pre-reqs
+### Pre-reqs
 Location service is only available in the regions below (As of Feb 10, 2021).
-<img src="./docs/images/region.png"  width="500"/>
+<img src="./docs/images/region.png"  width="400"/>
+
 Make sure your sso profile is using one those regions.
 
 
@@ -26,20 +28,22 @@ Make sure your sso profile is using one those regions.
    - Take a note of the map name
 5. To create a place index resource, follow the instructions [here](https://docs.aws.amazon.com/location/latest/developerguide/create-place-index-resource.html)
     - Take a note of the place index name
+6. To create a geofence collection, follow the instructions [here](https://docs.aws.amazon.com/location/latest/developerguide/add-geofences.html)
+   - You can use the example geojson file in this [github page](https://github.com/UBC-CIC/Amazon-Location-Template/tree/main/geofence%20examples) and upload this file onto the geofence collection you just created
+   - Take a note of the geofence collection name
 
-6. Go to [AWS Cognito Console](https://console.aws.amazon.com/cognito/home)
+7. Go to [AWS Cognito Console](https://console.aws.amazon.com/cognito/home)
    1. Choose Manage Identity Pools
     2. Choose the identity pool that is being used for this amplify project
     3. Click edit identity pool in the top right corner
-    4. Under "Unauthenticated identities", check "Enable access to unauthenticated identities" checkbox
-    5. Take a note the name of the unauthenticated IAM role attached to this Identity Pool
+    4. Take a note the name of the Authenticated IAM role attached to this Identity Pool
     
-7. Go to [AWS IAM Console](https://console.aws.amazon.com/iam/)
-    1. Click Roles on the left panel
-    2. Click onto the role name noted from step 6.5
-    3. Now, we need to add 2 inline policies to this role, click on "Add inline policy".
-       - Click onto the JSON tab
-       - Copy and paste the code below (allows us to access the map resource)
+8. Go to [AWS IAM Console](https://console.aws.amazon.com/iam/)
+    1. Click roles on the left panel
+    2. Click onto the role name noted from step 7.5
+    3. Now, we need to add 3 differenct inline policies to this role
+    4. Remember to change REGION, ACCOUNTID, MAPNAME, PLACEINDEXNAME and GEOFENCECOLLECTIONNAME to the ones associated with your account
+    
    ```
     {
     "Version": "2012-10-17",
@@ -58,14 +62,7 @@ Make sure your sso profile is using one those regions.
         ]
    }
    ```
-            Note the last line of the code above, replace the following with your own information.
-            REGION: Region of the map resource
-            ACCOUNTID: 12 digit ID associated with your account
-            MAPNAME: from step 4.1
-   - click on 'review policy', give it a name, then click create policy.
     5. Place index access policy
-         - Repeat step 7.3, but this time, use the code below and on the last line, replace 
-        PLACEINDEXNAME with the name in step 5.1
     ```
    {
     "Version": "2012-10-17",
@@ -81,16 +78,35 @@ Make sure your sso profile is using one those regions.
         ]
     }
    ```
+      6. Geofence collection access policy
+      
+      ```
+         {
+       "Version": "2012-10-17",
+       "Statement": [
+           {
+               "Sid": "GetGeofences",
+               "Effect": "Allow",
+               "Action": [
+                   "geo:ListGeofences",
+                   "geo:GetGeofence"
+               ],
+               "Resource": "arn:aws:geo:REGION:ACCOUNTID:geofence-collection/GEOFENCECOLLECTIONNAME"
+            }
+         ]
+      }
+      ```
 
-8. Create a local env file for map name and place index name
+9. Create a local env file for map name and place index name
     1. Under the root directory, create a file named .env
-    2. Copy the code below and replace MAPNAME and PLACEINDEXNAME with the names you created (from step 4.1 and 5.1):
+    2. Copy the code below and replace MAPNAME, PLACEINDEXNAME, GEOFENCECOLLECTIONNAME with the names you created (from step 4,5 and 6):
     ```
    REACT_APP_MAP_NAME=MAPNAME
    REACT_APP_PLACE_INDEX_NAME=PLACEINDEXNAME
+   REACT_APP_GEOFENCE_COLLECTION=GEOFENCECOLLECTIONNAME
    ```
    
-9. `npm start` to run the application you should see a screen like this:
+10. `npm start` to run the application you should see a screen like this:
    <img src="./docs/images/map.png"  width="800"/>
 
 
