@@ -107,7 +107,10 @@ Make sure your sso profile is using one those regions.
    ```
    
 10. `npm start` to run the application you should see a screen like this:
-   <img src="./docs/images/map.png"  width="800"/>
+    Create an account and log in to view the map
+    
+    <img src="./docs/images/login.png"  width="800"/>
+    <img src="./docs/images/map.png"  width="800"/>
 
 
 
