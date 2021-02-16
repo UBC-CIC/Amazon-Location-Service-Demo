@@ -16,6 +16,9 @@ import {AmplifySignOut} from "@aws-amplify/ui-react";
 let map;
 let marker;
 let AWS = require("aws-sdk");
+let credentials;
+let locationService;
+let geofenceArray = []
 
 const mapName = process.env.REACT_APP_MAP_NAME;
 const placeIndex = process.env.REACT_APP_PLACE_INDEX_NAME;
@@ -24,9 +27,6 @@ const geoFenceCollection = process.env.REACT_APP_GEOFENCE_COLLECTION;
 AWS.config.region = amplifyConfig.aws_project_region;
 Amplify.configure(amplifyConfig);
 
-let credentials;
-let locationService;
-let geofenceArray = []
 
 
 //Effects: request to load map resource from amazon location service
@@ -99,8 +99,8 @@ function setInitialMapLocation(){
 }
 
 //Effects: Triggers when search button is pressed
-//reads the location input, fires an API request to aws location services
-//flies to the location found on the map view
+//reads the content from the search bar, makes an API request to location services
+//flies to the location found on the map view.
 function searchAndUpdateMapview(map, text){
     let longitude = -123.11335999999994;
     let latitude = 49.260380000000055;
@@ -177,7 +177,12 @@ function renderGeofence(){
                 'layout': {},
                 'paint': {
                     'fill-color': 'orange',
-                    'fill-opacity': 0.8
+                    'fill-opacity': [
+                        'case',
+                        ['boolean', ['feature-state', 'hover'], false],
+                        1,
+                        0.4
+                    ]
                 }
             });
         }
@@ -185,6 +190,8 @@ function renderGeofence(){
 
 }
 
+//clear cache when user decided to log out
+//to avoid the geofence map layer loading more than once
 function clearCache(){
     window.location.reload()
 }
@@ -204,11 +211,11 @@ class AmznMap extends Component{
         constructMap(this.container)
         //set initial location of map view
         setInitialMapLocation();
+        //if not using geofence, can comment out the two functions below
         //get geofence data
         await getGeofenceData();
         //render the geofence data onto the map
         renderGeofence();
-
     }
 
     updateInputText=(e)=>{
@@ -237,7 +244,5 @@ class AmznMap extends Component{
             </div>
         )
     }
-
 }
-
 export default AmznMap;
