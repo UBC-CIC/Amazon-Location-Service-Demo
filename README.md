@@ -44,6 +44,7 @@ Make sure your sso profile is using one those regions.
     3. Now, we need to add 3 differenct inline policies to this role
     4. Remember to change REGION, ACCOUNTID, MAPNAME, PLACEINDEXNAME and GEOFENCECOLLECTIONNAME to the ones associated with your account
     
+    - Map resource access policy
    ```
     {
     "Version": "2012-10-17",
@@ -62,7 +63,7 @@ Make sure your sso profile is using one those regions.
         ]
    }
    ```
-    5. Place index access policy
+    - Place index access policy
     ```
    {
     "Version": "2012-10-17",
@@ -78,7 +79,7 @@ Make sure your sso profile is using one those regions.
         ]
     }
    ```
-      6. Geofence collection access policy
+      - Geofence collection access policy
       
       ```
          {
