@@ -12,7 +12,7 @@ import './AmznMap.css'
 import Geojson from "./Geojson";
 import Geofence from "./Geofence";
 import {AmplifySignOut} from "@aws-amplify/ui-react";
-
+import MapboxDraw from "@mapbox/mapbox-gl-draw/index";
 let map;
 let marker;
 let AWS = require("aws-sdk");
@@ -196,6 +196,17 @@ function clearCache(){
     window.location.reload()
 }
 
+function testDraw(){
+    var draw = new MapboxDraw({
+        displayControlsDefault: false,
+        controls:{
+            polygon:true,
+            trash:true
+        }
+    });
+    map.addControl(draw)
+}
+
 class AmznMap extends Component{
     constructor(props) {
         super(props);
@@ -216,6 +227,8 @@ class AmznMap extends Component{
         await getGeofenceData();
         //render the geofence data onto the map
         renderGeofence();
+
+        testDraw();
     }
 
     updateInputText=(e)=>{
