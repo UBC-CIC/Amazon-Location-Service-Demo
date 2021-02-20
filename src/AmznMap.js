@@ -1,24 +1,29 @@
 
 import React, { Component } from 'react';
-import Amplify from "aws-amplify";
+import Amplify, {Auth} from "aws-amplify";
 import amplifyConfig from "./aws-exports";
 import { Signer }  from '@aws-amplify/core'
 import mapboxgl from 'mapbox-gl/dist/mapbox-gl.js'
 import TextField from "@material-ui/core/TextField";
 import {Button} from "@material-ui/core";
-import {Auth} from 'aws-amplify';
-import Location from "aws-sdk/clients/location"
 import './AmznMap.css'
 import Geojson from "./Geojson";
 import Geofence from "./Geofence";
 import {AmplifySignOut} from "@aws-amplify/ui-react";
 import MapboxDraw from "@mapbox/mapbox-gl-draw/index";
+import { Link } from 'react-router-dom';
+import Authenticate from "./Auth";
+import Polygon from "@mapbox/mapbox-gl-draw/src/feature_types/polygon";
+// import { Beforeunload } from 'react-beforeunload';
 let map;
 let marker;
 let AWS = require("aws-sdk");
 let credentials;
 let locationService;
 let geofenceArray = []
+var draw
+let geojsonFormat = new Geojson()
+let geofenceService = new Geofence()
 
 const mapName = process.env.REACT_APP_MAP_NAME;
 const placeIndex = process.env.REACT_APP_PLACE_INDEX_NAME;
@@ -137,27 +142,10 @@ function searchAndUpdateMapview(map, text){
     )
 }
 
-//Effects: make an api request to get the list of geofences under geoFenceCollection
-//For each geofence found, store the geofenceID and coordinate as an instance of Geofence class
-// into geofencceArray
-function getGeofenceData() {
-    return new Promise(function (resolve, reject) {
-        locationService.listGeofences({CollectionName: geoFenceCollection}, (err, response) => {
-            if (err) reject(err);
-            if (response && response.Entries.length>0) {
-                for (var i = 0; i < response.Entries.length; i++) {
-                    let geofence = new Geofence(response.Entries[i].GeofenceId,response.Entries[i].Geometry.Polygon)
-                    geofenceArray.push(geofence)
-                }
-                resolve(resolve)
-            }
-        });
-    });
-}
 
 //Requires: calling getGeofenceData() first before calling this function
 //Effects: render the geofence data stored in geofenceArray onto the map
-function renderGeofence(){
+function renderGeofence(map, geofenceArray){
     if(geofenceArray.length===0) {
         console.log("no geofence found, call getGeofenceData() or upload geofences on AWS")
         return
@@ -193,11 +181,11 @@ function renderGeofence(){
 //clear cache when user decided to log out
 //to avoid the geofence map layer loading more than once
 function clearCache(){
-    window.location.reload()
+    window.location.reload(false)
 }
 
-function testDraw(){
-    var draw = new MapboxDraw({
+function makeDrawTool(map){
+    draw = new MapboxDraw({
         displayControlsDefault: false,
         controls:{
             polygon:true,
@@ -207,52 +195,103 @@ function testDraw(){
     map.addControl(draw)
 }
 
+function addGeofence(map, geofenceId){
+    var userGeojson = draw.getAll()
+    console.log(userGeojson)
+    if(geofenceId === "") alert("Geofence ID input is empty")
+    else if(userGeojson.features.length===0) alert('Please draw exactly 1 geofence on the map')
+    else if(userGeojson.features.length>1) alert('Please decrease the number of geofence on the map to 1')
+    else {
+        let coordinates = userGeojson.features[0].geometry.coordinates[0]
+        var params = {
+            CollectionName: 'myGeofenceCollection', /* required */
+            GeofenceId: geofenceId, /* required */
+            Geometry: { /* required */
+                Polygon: [geojsonFormat.sortCounterClockwise(coordinates)]
+            }
+        };
+
+        console.log(params)
+
+        locationService.putGeofence(params, function (err, data) {
+            if (err) console.log(err, err.stack); // an error occurred
+            else console.log(data);           // successful response
+        });
+    }
+}
+
 class AmznMap extends Component{
     constructor(props) {
         super(props);
         this.state = {
-            text: ""
+            searchBarText: "",
+            geofenceIdInput:""
         };
     }
 
     async componentDidMount() {
         //get current user credentials
         await getCurrentUser();
+
         //make map
         constructMap(this.container)
         //set initial location of map view
         setInitialMapLocation();
         //if not using geofence, can comment out the two functions below
         //get geofence data
-        await getGeofenceData();
-        //render the geofence data onto the map
-        renderGeofence();
+        await geofenceService.getGeofenceData(locationService, geofenceArray);
 
-        testDraw();
+        //render the geofence data onto the map
+        renderGeofence(map, geofenceArray);
+
+        makeDrawTool(map);
     }
 
     updateInputText=(e)=>{
         this.setState({
-            text:e.target.value
+            searchBarText:e.target.value
         });
     }
+    updateGeofenceInput=(e)=>{
+        this.setState(({
+            geofenceIdInput:e.target.value
+        }))
+    }
     handleSubmit=()=>{
-        searchAndUpdateMapview(map, this.state.text)
+        searchAndUpdateMapview(map, this.state.searchBarText)
     }
     signOutClear=()=>{
         clearCache();
+    }
+    geofencePage=()=>{
+        window.location.reload()
+        window.location.href = '/geofence'
+    }
+    printData=()=>{
+        addGeofence(map, this.state.geofenceIdInput)
     }
 
     render(){
         return (
             <div id = {'mapPage'}>
-                <AmplifySignOut onclick={this.signOutClear} />
+                <AmplifySignOut onclick={this.signOutClear}/>
                 <div id={"sbContainer"}>
-                    <TextField id="sbInput" label="Enter location" type="outlined" value={this.state.text} onChange={e=>this.updateInputText(e)}/>
-                    <Button id={'searchBtn'} variant="outlined" color="secondary" onClick={this.handleSubmit} >
+                    <TextField id="textInput" label="Enter location" type="outlined" value={this.state.text} onChange={e=>this.updateInputText(e)}/>
+                    <Button id={'navBtn'} variant="outlined" color="secondary" onClick={this.handleSubmit} >
                         Search
                     </Button>
-                </div>
+                    <TextField id="textInput" label="Enter unique geofence ID" type="outlined" value={this.state.text} onChange={e=>this.updateGeofenceInput(e)}/>
+                    <Button id={'navBtn'} variant="outlined" color="secondary" onClick={this.printData} >
+                        Add geofence
+                    </Button>
+                    <Link to="/geofence">
+                    <Button id={'navBtn'} variant={'outlined'}color={'secondary'} onClick={this.geofencePage}>
+                        List Geofence
+                    </Button>
+                    </Link>
+
+
+            </div>
                 <div className='Map' ref={(x) => { this.container = x }}/>
             </div>
         )
