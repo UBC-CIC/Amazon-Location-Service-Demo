@@ -12,9 +12,7 @@ import Geofence from "./Geofence";
 import {AmplifySignOut} from "@aws-amplify/ui-react";
 import MapboxDraw from "@mapbox/mapbox-gl-draw/index";
 import { Link } from 'react-router-dom';
-import Authenticate from "./Auth";
-import Polygon from "@mapbox/mapbox-gl-draw/src/feature_types/polygon";
-// import { Beforeunload } from 'react-beforeunload';
+
 let map;
 let marker;
 let AWS = require("aws-sdk");
@@ -29,10 +27,7 @@ const mapName = process.env.REACT_APP_MAP_NAME;
 const placeIndex = process.env.REACT_APP_PLACE_INDEX_NAME;
 const geoFenceCollection = process.env.REACT_APP_GEOFENCE_COLLECTION;
 
-AWS.config.region = amplifyConfig.aws_project_region;
 Amplify.configure(amplifyConfig);
-
-
 
 //Effects: request to load map resource from amazon location service
 function transformRequest(url, resourceType) {
@@ -53,7 +48,6 @@ function transformRequest(url, resourceType) {
     }
     // Don't sign
     return { url: url || "" };
-
 }
 
 //Effects: getting current user credentials from AWS Cognito
@@ -197,26 +191,24 @@ function makeDrawTool(map){
 
 function addGeofence(map, geofenceId){
     var userGeojson = draw.getAll()
-    console.log(userGeojson)
     if(geofenceId === "") alert("Geofence ID input is empty")
     else if(userGeojson.features.length===0) alert('Please draw exactly 1 geofence on the map')
     else if(userGeojson.features.length>1) alert('Please decrease the number of geofence on the map to 1')
     else {
         let coordinates = userGeojson.features[0].geometry.coordinates[0]
-        var params = {
-            CollectionName: 'myGeofenceCollection', /* required */
+        let params = {
+            CollectionName: geoFenceCollection, /* required */
             GeofenceId: geofenceId, /* required */
             Geometry: { /* required */
-                Polygon: [geojsonFormat.sortCounterClockwise(coordinates)]
+                Polygon: [geojsonFormat.determinePolygonOrientation(coordinates)]
             }
         };
-
-        console.log(params)
 
         locationService.putGeofence(params, function (err, data) {
             if (err) console.log(err, err.stack); // an error occurred
             else console.log(data);           // successful response
         });
+        window.location.reload()
     }
 }
 
@@ -232,7 +224,6 @@ class AmznMap extends Component{
     async componentDidMount() {
         //get current user credentials
         await getCurrentUser();
-
         //make map
         constructMap(this.container)
         //set initial location of map view
@@ -280,7 +271,7 @@ class AmznMap extends Component{
                     <Button id={'navBtn'} variant="outlined" color="secondary" onClick={this.handleSubmit} >
                         Search
                     </Button>
-                    <TextField id="textInput" label="Enter unique geofence ID" type="outlined" value={this.state.text} onChange={e=>this.updateGeofenceInput(e)}/>
+                    <TextField id="textInput" label="Enter a unique geofence name" type="outlined" value={this.state.text} onChange={e=>this.updateGeofenceInput(e)}/>
                     <Button id={'navBtn'} variant="outlined" color="secondary" onClick={this.printData} >
                         Add geofence
                     </Button>

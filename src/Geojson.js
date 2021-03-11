@@ -13,13 +13,16 @@ export default class Geojson{
          return geojsonData
      }
 
-     sortCounterClockwise(coordinates){
-         let reversed = coordinates.slice().reverse();
-         var area = polygonArea(coordinates)
-         console.log(area)
+     determinePolygonOrientation(coordinates){
+         //calculate area of the drawn polygon on the map
+         let area = polygonArea(coordinates)
+         //if area is positive, polygon is drawn in clockwise direction
+         //else area is negative or 0, polygon is drawn in counter-clockwise
          if(area>0){
              console.log("ClockWise")
-             return reversed
+             //return the reversed array of coordinates
+             //since reversing clockwise coordinates will make them counter-clockwise
+             return coordinates.slice().reverse();
          }else{
              console.log("Counter-Clockwise")
              return coordinates
