@@ -1,5 +1,5 @@
 import {polygonArea} from 'd3-polygon';
-export default class Geojson{
+export default class GeojsonHelper {
     //Effects: return the coordinates data into a readable format for mapboxgl
      geojsonFormatter(coordinates) {
          var geojsonData = {

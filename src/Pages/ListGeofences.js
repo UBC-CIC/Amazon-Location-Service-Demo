@@ -2,9 +2,9 @@ import { DataGrid } from '@material-ui/data-grid';
 import {Link} from "react-router-dom";
 import {Button} from "@material-ui/core";
 import React, { Component } from 'react';
-import Geofence from "./Geofence";
+import Geofence from "../Geofence/Geofence";
 import {Auth} from "aws-amplify";
-import amplifyConfig from "./aws-exports";
+import amplifyConfig from "../aws-exports";
 import AWS from 'aws-sdk';
 import Location from "aws-sdk/clients/location";
 import Table from '@material-ui/core/Table';
@@ -14,14 +14,13 @@ import TableContainer from '@material-ui/core/TableContainer';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import Paper from '@material-ui/core/Paper';
+import GeofenceHelper from "../Helpers/GeofenceHelper";
 
 
-let geofenceService = new Geofence();
+let geofenceService = new GeofenceHelper();
 let geofenceArray = [];
 let credentials;
 let locationService;
-
-var hashTable = {};
 
 let geofenceCollection = process.env.REACT_APP_GEOFENCE_COLLECTION
 
@@ -65,7 +64,8 @@ class ListGeofences extends Component{
     }
     async componentWillMount() {
         await this.getCurrentUser()
-        await geofenceService.getGeofenceData(locationService,geofenceArray)
+        geofenceArray = await geofenceService.listGeofence()
+        console.log(geofenceArray)
         this.fillTable()
 
     }
@@ -88,8 +88,8 @@ class ListGeofences extends Component{
         rows.splice(i, 1);
         this.setState({ rows });
         console.log(this.state.rows)
-
     }
+
 
     render(){
         return (
