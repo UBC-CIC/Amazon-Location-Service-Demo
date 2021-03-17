@@ -89,7 +89,7 @@ Make sure your sso profile is using one those regions.
                "Sid": "GetGeofences",
                "Effect": "Allow",
                "Action": [
-                   "geo:ListGeofences",
+                   "geo:ListGeofencesPage",
                    "geo:GetGeofence"
                ],
                "Resource": "arn:aws:geo:REGION:ACCOUNTID:geofence-collection/GEOFENCECOLLECTIONNAME"

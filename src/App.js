@@ -1,18 +1,20 @@
 import './App.css';
-import AmznMap from "./Pages/AmznMap";
-import { withAuthenticator } from '@aws-amplify/ui-react';
+import MapPage from "./Pages/MapPage";
+import {AmplifySignOut, withAuthenticator} from '@aws-amplify/ui-react';
 import {BrowserRouter as Router, Switch,Route} from 'react-router-dom';
-import ListGeofences from './Pages/ListGeofences'
+import ListGeofencesPage from './Pages/ListGeofencesPage'
+import React from "react";
 
-//TODO write documentations on Geofence
+//TODO Update documentations
 
 function App() {
     return (
         <div className="App">
+            <AmplifySignOut/>
             <Router>
                 <Switch>
-                    <Route path='/geofence' exact component={ListGeofences} />
-                    <Route path ='/' exact component={AmznMap}/>
+                    <Route path='/geofence' exact component={ListGeofencesPage} />
+                    <Route path ='/' exact component={MapPage}/>
                 </Switch>
             </Router>
         </div>

@@ -1,5 +1,4 @@
-import { DataGrid } from '@material-ui/data-grid';
-import {Link} from "react-router-dom";
+import './ListGeofencePage.css'
 import {Button} from "@material-ui/core";
 import React, { Component } from 'react';
 import Table from '@material-ui/core/Table';
@@ -15,11 +14,11 @@ import amplifyConfig from "../aws-exports";
 import {Auth} from "aws-amplify";
 
 
-let geofenceService = new GeofenceHelper();
+const geofenceService = new GeofenceHelper();
 let geofenceArray = [];
+
 let credentials;
 let locationService;
-
 let geofenceCollection = process.env.REACT_APP_GEOFENCE_COLLECTION
 
 function createData(id, createTime, status) {
@@ -27,7 +26,7 @@ function createData(id, createTime, status) {
 }
 
 
-class ListGeofences extends Component{
+class ListGeofencesPage extends Component{
     constructor(props) {
         super(props);
         this.state={
@@ -41,15 +40,17 @@ class ListGeofences extends Component{
         this.fillTable = this.fillTable.bind(this)
 
     }
+    //fill the table with the geofence fetched from aws
     fillTable() {
         let rows=[]
         for (let i = 0; i < geofenceArray.length; i++) {
-            rows.push(createData(geofenceArray[i].geofenceId,geofenceArray[i].createTime,geofenceArray[i].status))
+            rows.push(createData(geofenceArray[i].geofenceId,geofenceArray[i].createTime.toString(),geofenceArray[i].status))
         }
         this.setState({
             rows: rows
         })
     }
+    //Using auth to get currentCredentials
     async getCurrentUser(){
         credentials = await Auth.currentCredentials();
         locationService = new AWS.Location({
@@ -60,13 +61,13 @@ class ListGeofences extends Component{
     async componentDidMount(){
         await this.getCurrentUser()
         geofenceArray = await geofenceService.listGeofence()
-        console.log(geofenceArray)
         this.fillTable()
-
     }
 
-    deleteOnAWS(id){
-        var params = {
+
+    //delete geofence on aws
+    deleteGeofence(id){
+        let params = {
             CollectionName: geofenceCollection, /* required */
             GeofenceIds: [id]
         };
@@ -76,15 +77,15 @@ class ListGeofences extends Component{
         });
 
     }
-
+    //Delete geofence from the table and aws
     handleDelete(i){
         const { rows } = this.state;
-        this.deleteOnAWS(rows[i].id)
+        this.deleteGeofence(rows[i].id)
         rows.splice(i, 1);
         this.setState({ rows });
-        console.log(this.state.rows)
     }
 
+    //go back to map view
     backToMap(){
         window.location.href= '/'
     }
@@ -96,9 +97,6 @@ class ListGeofences extends Component{
                 <Button id={'backbtn'} variant={'outlined'}color={'secondary'} onClick={this.backToMap}>
                         Back to Map
                 </Button>
-
-
-
                 <TableContainer component={Paper}>
                     <Table className={'table'} size="small" aria-label="a dense table">
                         <TableHead>
@@ -130,5 +128,5 @@ class ListGeofences extends Component{
 
     }
 }
-export default ListGeofences;
+export default ListGeofencesPage;
 

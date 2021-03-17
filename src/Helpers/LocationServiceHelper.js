@@ -2,7 +2,6 @@ import amplifyConfig from "../aws-exports";
 import {Signer} from "@aws-amplify/core";
 import {Auth} from "aws-amplify";
 import mapboxgl from "mapbox-gl";
-import MapboxDraw from "@mapbox/mapbox-gl-draw/index";
 let credentials;
 const mapName = process.env.REACT_APP_MAP_NAME;
 

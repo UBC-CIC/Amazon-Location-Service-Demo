@@ -5,13 +5,15 @@ import amplifyConfig from "../aws-exports";
 const geoFenceCollection = process.env.REACT_APP_GEOFENCE_COLLECTION;
 let AWS = require("aws-sdk");
 let geofenceArray =[]
+
+
 class GeofenceHelper{
     constructor() {
         this.geofenceArray =[]
     }
-    //Effects: make an api request to get the list of geofences under geoFenceCollection
-//For each geofence found, store the geofenceID and coordinate as an instance of Geofence class
-// into geofencceArray
+ // make an api request to get the list of geofences under geoFenceCollection
+//For each geofence found, store the geofenceID, coordinates, creatTime and status as an instance of Geofence class
+// into geofenceArray
     async getGeofenceData() {
         return new Promise(async function (resolve, reject) {
             let credentials = await Auth.currentCredentials();
@@ -33,25 +35,21 @@ class GeofenceHelper{
         });
     }
 
+    //Return the geofence array
     async listGeofence(){
         if(geofenceArray.length!==0){
-            console.log(geofenceArray)
             return geofenceArray
         }else{
             await this.getGeofenceData()
-            console.log(geofenceArray)
             return geofenceArray
         }
     }
+
     //Requires: calling getGeofenceData() first before calling this function
     //Effects: render the geofence data stored in geofenceArray onto the map
     async renderGeofence(map){
         await this.getGeofenceData()
-        if(geofenceArray.length===0) {
-            console.log("no geofence found, call getGeofenceData() or upload geofences on AWS")
-            return
-        }
-        let geojson = new GeojsonHelper()
+        let geojsonHelper = new GeojsonHelper()
         map.once('load', function () {
             for(var i =0;i<geofenceArray.length;i++){
                 if(map.getLayer(geofenceArray[i].geofenceId)) map.removeLayer(geofenceArray[i].geofenceId)
@@ -59,7 +57,7 @@ class GeofenceHelper{
 
                 map.addSource(geofenceArray[i].geofenceId, {
                     'type': 'geojson',
-                    'data': geojson.geojsonFormatter(
+                    'data': geojsonHelper.geojsonFormatter(
                         geofenceArray[i].coordinates[0])
                 });
                 map.addLayer({

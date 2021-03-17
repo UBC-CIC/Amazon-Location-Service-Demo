@@ -1,40 +1,32 @@
-
 import React, { Component } from 'react';
 import Amplify, {Auth} from "aws-amplify";
 import amplifyConfig from "../aws-exports";
-import { Signer }  from '@aws-amplify/core'
 import Location from "aws-sdk/clients/location";
 import mapboxgl from 'mapbox-gl/dist/mapbox-gl.js'
 import TextField from "@material-ui/core/TextField";
 import {Button} from "@material-ui/core";
-import './AmznMap.css'
+import './MapPage.css'
 import GeojsonHelper from "../Helpers/GeojsonHelper";
-import Geofence from "../Geofence/Geofence";
-import {AmplifySignOut} from "@aws-amplify/ui-react";
 import MapboxDraw from "@mapbox/mapbox-gl-draw/index";
-import { Link } from 'react-router-dom';
 import GeofenceHelper from "../Helpers/GeofenceHelper";
-import locationServiceHelper from '../Helpers/LocationServiceHelper'
+import LocationServiceHelper from '../Helpers/LocationServiceHelper'
 let map;
 let marker;
-let AWS = require("aws-sdk");
 let credentials;
-let geofenceArray = []
-let geojsonFormat = new GeojsonHelper()
-
-const XRegExp = require('xregexp');
-
-const mapName = process.env.REACT_APP_MAP_NAME;
-const placeIndex = process.env.REACT_APP_PLACE_INDEX_NAME;
-const geoFenceCollection = process.env.REACT_APP_GEOFENCE_COLLECTION;
-const geofenceHelper = new GeofenceHelper()
-const locationHelper = new locationServiceHelper()
 let locationService;
 let draw;
+
+const XRegExp = require('xregexp');
+const AWS = require("aws-sdk");
+const placeIndex = process.env.REACT_APP_PLACE_INDEX_NAME;
+const geoFenceCollection = process.env.REACT_APP_GEOFENCE_COLLECTION;
+const geojsonHelper = new GeojsonHelper()
+const geofenceHelper = new GeofenceHelper()
+const locationHelper = new LocationServiceHelper()
 Amplify.configure(amplifyConfig);
 
 
-//Effects: getting current user credentials from AWS Cognito
+//Getting current user credentials
 async function getLocationService(){
     credentials = await Auth.currentCredentials();
     locationService = new AWS.Location({
@@ -43,8 +35,8 @@ async function getLocationService(){
     });
 }
 
-//Effects: construct a container to render a map, add navigation control(zoom in and out button)
-//from mapboxGL, add geolocate control (top right button to locate user location)
+//Construct a container to render a map, add navigation (zoom in and out button),
+//geolocate(top right button to locate user location) control and drawl tools
 async function constructMap(container){
     map = await locationHelper.constructMapWithCenter(container,[-123.14229959999999, 49.2194576 ])
     map.addControl(new mapboxgl.NavigationControl(), "top-left");
@@ -69,7 +61,7 @@ async function constructMap(container){
 
 }
 
-//Effects: Triggers when search button is pressed
+//Triggers when search button is pressed
 //reads the content from the search bar, makes an API request to location services
 //flies to the location found on the map view.
 function searchAndUpdateMapview(map, text){
@@ -107,27 +99,24 @@ function searchAndUpdateMapview(map, text){
 
 
 
-//clear cache when user decided to log out
-//to avoid the geofence map layer loading more than once
-function clearCache(){
-    window.location.reload(false)
-}
-
+//add geofence to aws
 function addGeofence(map, geofenceId){
     const polygon = draw.getAll()
     const regex = new XRegExp("^[-._\\s\\p{L}\\p{N}]+$")
     if(geofenceId === "") alert("Geofence ID input is empty")
     else if(polygon.features.length===0) alert('Please draw exactly 1 geofence on the map')
     else if(polygon.features.length>1) alert('Please decrease the number of geofence on the map to 1')
-    else if(!regex.test(geofenceId)){alert("Please enter valid characters")}
+    //if geofenceID contains symbols other than -._
+    else if(!regex.test(geofenceId)) {alert("Please enter valid characters")}
     else {
+        //replace space character with -
         let newGeofenceId = geofenceId.replace(/\s+/g, '-')
         let coordinates = polygon.features[0].geometry.coordinates[0]
         let params = {
             CollectionName: geoFenceCollection, /* required */
             GeofenceId: newGeofenceId, /* required */
             Geometry: { /* required */
-                Polygon: [geojsonFormat.determinePolygonOrientation(coordinates)]
+                Polygon: [geojsonHelper.determinePolygonOrientation(coordinates)]
             }
         };
         locationService.putGeofence(params, function (err, data) {
@@ -141,12 +130,12 @@ function addGeofence(map, geofenceId){
     }
 }
 
-class AmznMap extends Component{
+class MapPage extends Component{
     constructor(props) {
         super(props);
         this.state = {
             searchBarText: "",
-            geofenceIdInput:""
+            geofenceIdText:""
         };
     }
 
@@ -164,35 +153,33 @@ class AmznMap extends Component{
             searchBarText:e.target.value
         });
     }
-    updateGeofenceInput=(e)=>{
+    updateGeofenceIdText=(e)=>{
         this.setState(({
-            geofenceIdInput:e.target.value
+            geofenceIdText:e.target.value
         }))
     }
-    handleSubmit=()=>{
+    handleSearch=()=>{
         searchAndUpdateMapview(map, this.state.searchBarText)
     }
-    signOutClear=()=>{
-        clearCache();
-    }
+    //go to geofencePage
     geofencePage=()=>{
         window.location.href = '/geofence'
     }
-    printData=()=>{
-        addGeofence(map, this.state.geofenceIdInput)
+    //calling to add geofence in aws
+    addGeofence=()=>{
+        addGeofence(map, this.state.geofenceIdText)
     }
 
     render(){
         return (
             <div id = {'mapPage'}>
-                <AmplifySignOut onclick={this.signOutClear}/>
                 <div id={"sbContainer"}>
                     <TextField id="textInput" label="Enter location" type="outlined" value={this.state.text} onChange={e=>this.updateInputText(e)}/>
-                    <Button id={'navBtn'} variant="outlined" color="secondary" onClick={this.handleSubmit} >
+                    <Button id={'navBtn'} variant="outlined" color="secondary" onClick={this.handleSearch} >
                         Search
                     </Button>
-                    <TextField id="textInput" label="Enter a unique geofence name" type="outlined" value={this.state.text} onChange={e=>this.updateGeofenceInput(e)}/>
-                    <Button id={'navBtn'} variant="outlined" color="secondary" onClick={this.printData} >
+                    <TextField id="textInput" label="Enter a unique geofence name" type="outlined" value={this.state.text} onChange={e=>this.updateGeofenceIdText(e)}/>
+                    <Button id={'navBtn'} variant="outlined" color="secondary" onClick={this.addGeofence} >
                         Add geofence
                     </Button>
                     <Button id={'navBtn'} variant={'outlined'}color={'secondary'} onClick={this.geofencePage}>
@@ -204,4 +191,4 @@ class AmznMap extends Component{
         )
     }
 }
-export default AmznMap;
+export default MapPage;
