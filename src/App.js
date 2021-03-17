@@ -5,8 +5,6 @@ import {BrowserRouter as Router, Switch,Route} from 'react-router-dom';
 import ListGeofencesPage from './Pages/ListGeofencesPage'
 import React from "react";
 
-//TODO Update documentations
-
 function App() {
     return (
         <div className="App">
