@@ -2,11 +2,6 @@ import { DataGrid } from '@material-ui/data-grid';
 import {Link} from "react-router-dom";
 import {Button} from "@material-ui/core";
 import React, { Component } from 'react';
-import Geofence from "../Geofence/Geofence";
-import {Auth} from "aws-amplify";
-import amplifyConfig from "../aws-exports";
-import AWS from 'aws-sdk';
-import Location from "aws-sdk/clients/location";
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
@@ -15,6 +10,9 @@ import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import Paper from '@material-ui/core/Paper';
 import GeofenceHelper from "../Helpers/GeofenceHelper";
+import * as AWS from "aws-sdk";
+import amplifyConfig from "../aws-exports";
+import {Auth} from "aws-amplify";
 
 
 let geofenceService = new GeofenceHelper();
@@ -36,7 +34,6 @@ class ListGeofences extends Component{
             columns : [
                 {field: 'geofenceID', headerName: 'Geofence ID', width: 250},
                 {field: 'createTime', headerName: 'Create Time', width: 500},
-                // {field: 'geometry', headerName: 'Geometry', width: 200},
                 {field: 'status', headerName: 'Status', width: 170},
             ],
             rows :[]
@@ -53,8 +50,6 @@ class ListGeofences extends Component{
             rows: rows
         })
     }
-
-    //Effects: getting current user credentials from AWS Cognito
     async getCurrentUser(){
         credentials = await Auth.currentCredentials();
         locationService = new AWS.Location({
@@ -62,7 +57,7 @@ class ListGeofences extends Component{
             region: amplifyConfig.aws_project_region,
         });
     }
-    async componentWillMount() {
+    async componentDidMount(){
         await this.getCurrentUser()
         geofenceArray = await geofenceService.listGeofence()
         console.log(geofenceArray)
@@ -90,16 +85,19 @@ class ListGeofences extends Component{
         console.log(this.state.rows)
     }
 
+    backToMap(){
+        window.location.href= '/'
+    }
+
 
     render(){
         return (
             <div style={{ height: 700, width: '100%' }}>
-                <Link to="/">
-                    <Button id={'backbtn'} variant={'outlined'}color={'secondary'}>
+                <Button id={'backbtn'} variant={'outlined'}color={'secondary'} onClick={this.backToMap}>
                         Back to Map
-                    </Button>
+                </Button>
 
-                </Link>
+
 
                 <TableContainer component={Paper}>
                     <Table className={'table'} size="small" aria-label="a dense table">
@@ -133,3 +131,4 @@ class ListGeofences extends Component{
     }
 }
 export default ListGeofences;
+

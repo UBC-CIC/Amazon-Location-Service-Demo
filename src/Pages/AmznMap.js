@@ -3,6 +3,7 @@ import React, { Component } from 'react';
 import Amplify, {Auth} from "aws-amplify";
 import amplifyConfig from "../aws-exports";
 import { Signer }  from '@aws-amplify/core'
+import Location from "aws-sdk/clients/location";
 import mapboxgl from 'mapbox-gl/dist/mapbox-gl.js'
 import TextField from "@material-ui/core/TextField";
 import {Button} from "@material-ui/core";
@@ -19,8 +20,9 @@ let marker;
 let AWS = require("aws-sdk");
 let credentials;
 let geofenceArray = []
-var draw
 let geojsonFormat = new GeojsonHelper()
+
+const XRegExp = require('xregexp');
 
 const mapName = process.env.REACT_APP_MAP_NAME;
 const placeIndex = process.env.REACT_APP_PLACE_INDEX_NAME;
@@ -28,6 +30,7 @@ const geoFenceCollection = process.env.REACT_APP_GEOFENCE_COLLECTION;
 const geofenceHelper = new GeofenceHelper()
 const locationHelper = new locationServiceHelper()
 let locationService;
+let draw;
 Amplify.configure(amplifyConfig);
 
 
@@ -55,7 +58,7 @@ async function constructMap(container){
     );
 
     marker = new mapboxgl.Marker()
-    let draw = new MapboxDraw({
+    draw = new MapboxDraw({
         displayControlsDefault: false,
         controls:{
             polygon:true,
@@ -112,23 +115,29 @@ function clearCache(){
 
 function addGeofence(map, geofenceId){
     const polygon = draw.getAll()
+    const regex = new XRegExp("^[-._\\s\\p{L}\\p{N}]+$")
     if(geofenceId === "") alert("Geofence ID input is empty")
     else if(polygon.features.length===0) alert('Please draw exactly 1 geofence on the map')
     else if(polygon.features.length>1) alert('Please decrease the number of geofence on the map to 1')
+    else if(!regex.test(geofenceId)){alert("Please enter valid characters")}
     else {
+        let newGeofenceId = geofenceId.replace(/\s+/g, '-')
         let coordinates = polygon.features[0].geometry.coordinates[0]
         let params = {
             CollectionName: geoFenceCollection, /* required */
-            GeofenceId: geofenceId, /* required */
+            GeofenceId: newGeofenceId, /* required */
             Geometry: { /* required */
                 Polygon: [geojsonFormat.determinePolygonOrientation(coordinates)]
             }
         };
         locationService.putGeofence(params, function (err, data) {
             if (err) console.log(err, err.stack); // an error occurred
-            else console.log(data);           // successful response
+            else {
+                console.log(data)
+                window.location.href= '/geofence'
+
+            }
         });
-        window.location.reload()
     }
 }
 
@@ -186,11 +195,9 @@ class AmznMap extends Component{
                     <Button id={'navBtn'} variant="outlined" color="secondary" onClick={this.printData} >
                         Add geofence
                     </Button>
-                    <Link to="/geofence">
                     <Button id={'navBtn'} variant={'outlined'}color={'secondary'} onClick={this.geofencePage}>
                         List Geofence
                     </Button>
-                    </Link>
             </div>
                 <div className='Map' ref={(x) => { this.container = x }}/>
             </div>
