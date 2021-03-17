@@ -13,7 +13,7 @@ Location service is only available in the regions below (As of Feb 10, 2021).
 Make sure your sso profile is using one those regions.
 
 
-## How to use
+## Creating the resources required
 1. Install dependencies using `npm install`
 2. Log into aws and initiate this project as an Amplify project: `amplify init`
 3. Add authentication to this project:
@@ -24,12 +24,11 @@ Make sure your sso profile is using one those regions.
    ? Do you want to configure advanced settings?  No, I am done.
    ```
    
-4. To create map resource, follow the instructions [here](https://docs.aws.amazon.com/location/latest/developerguide/create-map-resource.html)
+4. Create map resource, follow the instructions [here](https://docs.aws.amazon.com/location/latest/developerguide/create-map-resource.html)
    - Take a note of the map name
-5. To create a place index resource, follow the instructions [here](https://docs.aws.amazon.com/location/latest/developerguide/create-place-index-resource.html)
+5. Create a place index resource, follow the instructions [here](https://docs.aws.amazon.com/location/latest/developerguide/create-place-index-resource.html)
     - Take a note of the place index name
-6. To create a geofence collection, follow the instructions [here](https://docs.aws.amazon.com/location/latest/developerguide/add-geofences.html)
-   - You can use the example geojson file in this [github page](https://github.com/UBC-CIC/Amazon-Location-Template/tree/main/geofence%20examples) and upload this file onto the geofence collection you just created
+6. Create a geofence collection, follow the instructions [here](https://docs.aws.amazon.com/location/latest/developerguide/add-geofences.html)
    - Take a note of the geofence collection name
 
 7. Go to [AWS Cognito Console](https://console.aws.amazon.com/cognito/home)
@@ -40,63 +39,11 @@ Make sure your sso profile is using one those regions.
     
 8. Go to [AWS IAM Console](https://console.aws.amazon.com/iam/)
     1. Click roles on the left panel
-    2. Click onto the role name noted from step 7.5
-    3. Now, we need to add 3 differenct inline policies to this role
-    4. Remember to change REGION, ACCOUNTID, MAPNAME, PLACEINDEXNAME and GEOFENCECOLLECTIONNAME to the ones associated with your account
-    
-    - Map resource access policy
-   ```
-    {
-    "Version": "2012-10-17",
-    "Statement": [
-        {
-            "Sid": "MapsReadOnly",
-            "Effect": "Allow",
-            "Action": [
-                "geo:GetMapStyleDescriptor",
-                "geo:GetMapGlyphs",
-                "geo:GetMapSprites",
-                "geo:GetMapTile"
-            ],
-            "Resource": "arn:aws:geo:REGION:ACCOUNTID:map/MAPNAME"
-             }
-        ]
-   }
-   ```
-    - Place index access policy
-    ```
-   {
-    "Version": "2012-10-17",
-    "Statement": [
-        {
-            "Sid": "PlacesReadOnly",
-            "Effect": "Allow",
-            "Action": [
-                "geo:SearchPlaceIndex*"
-            ],
-            "Resource": "arn:aws:geo:REGION:ACCOUNTID:place-index/PLACEINDEXNAME"
-            }
-        ]
-    }
-   ```
-      - Geofence collection access policy
-      
-      ```
-         {
-       "Version": "2012-10-17",
-       "Statement": [
-           {
-               "Sid": "GetGeofences",
-               "Effect": "Allow",
-               "Action": [
-                   "geo:ListGeofencesPage",
-                   "geo:GetGeofence"
-               ],
-               "Resource": "arn:aws:geo:REGION:ACCOUNTID:geofence-collection/GEOFENCECOLLECTIONNAME"
-            }
-         ]
-      }
-      ```
+    2. Click onto the authenticated role name noted from step 7.4
+   3. Add the following inline policies with the resource ARN
+      <img src="./docs/images/locationPolicies.png"  width="800"/>
+      <img src="./docs/images/resourceARN.png"  width="800"/>
+
 
 9. Create a local env file for map name and place index name
     1. Under the root directory, create a file named .env
@@ -112,6 +59,16 @@ Make sure your sso profile is using one those regions.
     
     <img src="./docs/images/login.png"  width="800"/>
     <img src="./docs/images/map.png"  width="800"/>
+    <img src="./docs/images/listGeofence.png" width="800"/>
+
+
+## How to use
+- Type in address/location name on the search text field and click search
+- To create a geofence, draw exactly 1 geofence using the draw tool on the top-right corner
+- Enter a unique geofence name for it
+- Click add geofence, you will see the geofence in the table and aws
+
+
 
 
 
