@@ -7,7 +7,10 @@ This template uses Amazon Location Services to:
 3. Display geofence
 
 ### Pre-reqs
+Warning: `mapbox-gl@^2` and `react-map-gl@^6` are NOT compatible with Amazon Location Service!
+
 Location service is only available in the regions below (As of Feb 10, 2021).
+
 <img src="./docs/images/region.png"  width="400"/>
 
 Make sure your sso profile is using one those regions.
