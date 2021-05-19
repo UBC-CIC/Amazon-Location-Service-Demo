@@ -1,0 +1,41 @@
+version: 1
+backend:
+  phases:
+    build:
+      commands:
+        - amplifyPush --simple
+    postBuild:
+      commands:
+        - yum install -y jq
+        - export AuthRoleName=$(cat "./amplify/#current-cloud-backend/amplify-meta.json" | jq -r '.providers.awscloudformation.AuthRoleName')
+        - export ACCOUNT_ID=$(aws sts get-caller-identity | jq -r '.Account')
+        - POLICYINVOKE=$(aws iam list-policies --scope Local --query 'Policies[*].PolicyName')
+        - if [[ ! " ${POLICYINVOKE[@]} " =~ "AmazonLocationAccessPolicy" ]]; then aws iam create-policy --policy-name AmazonLocationAccessPolicy --policy-document file://./policies/LocationPolicy.json; fi 
+        - aws iam attach-role-policy --policy-arn arn:aws:iam::${ACCOUNT_ID}:policy/AmazonLocationAccessPolicy --role-name ${AuthRoleName}
+        - export PROJECT_NAME=$(cat ./amplify/.config/project-config.json | jq -r '.projectName')
+        - export REACT_APP_MAP_NAME="${PROJECT_NAME}Map"
+        - export MapInvoke=$(aws location describe-map --map-name $REACT_APP_MAP_NAME --query MapName)
+        - if [ -z "$MapInvoke" ]; then aws location create-map --map-name $REACT_APP_MAP_NAME --configuration "Style=VectorEsriLightGrayCanvas" --pricing-plan "RequestBasedUsage"; fi
+        - export REACT_APP_PLACE_INDEX_NAME="${PROJECT_NAME}PlaceIndex"
+        - export PlaceIndexInvoke=$(aws location describe-place-index --index-name $REACT_APP_PLACE_INDEX_NAME)
+        - if [ -z "$PlaceIndexInvoke" ]; then aws location create-place-index --data-source "Esri" --index-name $REACT_APP_PLACE_INDEX_NAME --pricing-plan "RequestBasedUsage"; fi
+        - export REACT_APP_GEOFENCE_COLLECTION="${PROJECT_NAME}GeofenceCollection"
+        - export GeofenceCollectionInvoke=$(aws location describe-geofence-collection --collection-name $REACT_APP_GEOFENCE_COLLECTION)
+        - if [ -z "$GeofenceCollectionInvoke" ]; then aws location create-geofence-collection --collection-name $REACT_APP_GEOFENCE_COLLECTION --pricing-plan "RequestBasedUsage"; fi
+
+frontend:
+  phases:
+    preBuild:
+      commands:
+
+        - yarn install
+    build:
+      commands:
+        - yarn run build
+  artifacts:
+    baseDirectory: build
+    files:
+      - '**/*'
+  cache:
+    paths:
+      - node_modules/**/*
