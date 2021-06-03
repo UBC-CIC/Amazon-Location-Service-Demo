@@ -12,14 +12,14 @@ import GeofenceHelper from "../Helpers/GeofenceHelper";
 import * as AWS from "aws-sdk";
 import amplifyConfig from "../aws-exports";
 import {Auth} from "aws-amplify";
+import Geofence from "../Geofence/Geofence";
 
 
 const geofenceService = new GeofenceHelper();
-let geofenceArray = [];
 
 let credentials;
 let locationService;
-let geofenceCollection = process.env.REACT_APP_GEOFENCE_COLLECTION
+const geofenceCollection = process.env.REACT_APP_GEOFENCE_COLLECTION;
 
 function createData(id, createTime, status) {
     return {id, createTime, status};
@@ -35,19 +35,22 @@ class ListGeofencesPage extends Component{
                 {field: 'createTime', headerName: 'Create Time', width: 500},
                 {field: 'status', headerName: 'Status', width: 170},
             ],
+            geofenceArray : [],
             rows :[]
         }
         this.fillTable = this.fillTable.bind(this)
+        this.backToMap = this.backToMap.bind(this)
 
     }
     //fill the table with the geofence fetched from aws
     fillTable() {
-        let rows=[]
+        const {geofenceArray} = this.state
+        var rows = []
         for (let i = 0; i < geofenceArray.length; i++) {
             rows.push(createData(geofenceArray[i].geofenceId,geofenceArray[i].createTime.toString(),geofenceArray[i].status))
         }
         this.setState({
-            rows: rows
+            rows:rows
         })
     }
     //Using auth to get currentCredentials
@@ -60,7 +63,7 @@ class ListGeofencesPage extends Component{
     }
     async componentDidMount(){
         await this.getCurrentUser()
-        geofenceArray = await geofenceService.listGeofence()
+        // this.state.geofenceArray = await geofenceService.listGeofence()
         this.fillTable()
     }
 
@@ -87,7 +90,29 @@ class ListGeofencesPage extends Component{
 
     //go back to map view
     backToMap(){
-        window.location.href= '/'
+        this.props.history.push('/map')
+    }
+
+    // make an api request to get the list of geofences under geoFenceCollection
+//For each geofence found, store the geofenceID, coordinates, creatTime and status as an instance of Geofence class
+// into geofenceArray
+    async getGeofenceData() {
+        const{geofenceArray} = this.state
+        let credentials = await Auth.currentCredentials();
+        let locationService = new AWS.Location({
+            credentials,
+            region: amplifyConfig.aws_project_region,
+        });
+        locationService.listGeofences({CollectionName: geofenceCollection}, (err, response) => {
+            if (err) console.log(err);
+            if (response && response.Entries.length>0) {
+                for (let i = 0; i < response.Entries.length; i++) {
+                    let geofence = new Geofence(response.Entries[i].GeofenceId,response.Entries[i].Geometry.Polygon,
+                        response.Entries[i].CreateTime, response.Entries[i].Status)
+                    geofenceArray.push(geofence)
+                }
+            }
+        });
     }
 
 
