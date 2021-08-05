@@ -21,6 +21,7 @@ import { Link } from "react-router-dom";
 import MapIcon from '@material-ui/icons/Map';
 import EditLocationIcon from '@material-ui/icons/EditLocation';
 import {AmplifySignOut} from "@aws-amplify/ui-react";
+import {Auth} from "aws-amplify";
 const drawerWidth = 240;
 
 const useStyles = makeStyles((theme) => ({
@@ -101,6 +102,11 @@ export default function Navbar() {
         setOpen(false);
     };
 
+    const signOut=()=>{
+        Auth.signOut()
+        window.location.reload()
+    }
+
     return (
         <div className={classes.root}>
             <CssBaseline />
@@ -129,7 +135,7 @@ export default function Navbar() {
 
                     <Container>
                         <Container className={classes.signOutButton}  >
-                            <AmplifySignOut/>
+                            <Button onClick={signOut} variant={'contained'}>Sign out</Button>
                         </Container>
                     </Container>
 
@@ -163,6 +169,10 @@ export default function Navbar() {
                     <ListItem component={Link} to="/geofence">
                         <ListItemIcon>{<EditLocationIcon />}</ListItemIcon>
                         <ListItemText primary={"Geofence"} />
+                    </ListItem>
+                    <ListItem component={Link} to="/navigation">
+                        <ListItemIcon>{<EditLocationIcon />}</ListItemIcon>
+                        <ListItemText primary={"Navigation"} />
                     </ListItem>
 
                 </List>

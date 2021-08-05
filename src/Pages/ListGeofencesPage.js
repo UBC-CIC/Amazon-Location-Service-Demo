@@ -1,5 +1,5 @@
 import './ListGeofencePage.css'
-import {Button} from "@material-ui/core";
+import {Button, Container} from "@material-ui/core";
 import React, { Component } from 'react';
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
@@ -61,10 +61,29 @@ class ListGeofencesPage extends Component{
             region: amplifyConfig.aws_project_region,
         });
     }
+    listGeofence(){
+        let geofenceArray = []
+        locationService.listGeofences({CollectionName: geofenceCollection}, (err, response) => {
+            if (err) console.log(err);
+            if (response && response.Entries.length>0) {
+                for (let i = 0; i < response.Entries.length; i++) {
+                    let geofence = new Geofence(response.Entries[i].GeofenceId,response.Entries[i].Geometry.Polygon,
+                        response.Entries[i].CreateTime, response.Entries[i].Status)
+                    geofenceArray.push(geofence)
+                }
+            }
+            console.log(geofenceArray)
+            this.setState({
+                geofenceArray:geofenceArray
+            })
+            this.fillTable()
+        });
+
+    }
     async componentDidMount(){
         await this.getCurrentUser()
-        // this.state.geofenceArray = await geofenceService.listGeofence()
-        this.fillTable()
+        await this.listGeofence()
+
     }
 
 
@@ -90,7 +109,7 @@ class ListGeofencesPage extends Component{
 
     //go back to map view
     backToMap(){
-        this.props.history.push('/map')
+        this.props.history.push('/geofence')
     }
 
     // make an api request to get the list of geofences under geoFenceCollection
@@ -118,7 +137,7 @@ class ListGeofencesPage extends Component{
 
     render(){
         return (
-            <div style={{ height: 700, width: '100%' }}>
+            <Container>
                 <Button id={'backbtn'} variant={'outlined'}color={'secondary'} onClick={this.backToMap}>
                         Back to Map
                 </Button>
@@ -148,7 +167,7 @@ class ListGeofencesPage extends Component{
                         </TableBody>
                     </Table>
                 </TableContainer>
-            </div>
+            </Container>
         );
 
     }
