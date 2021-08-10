@@ -4,7 +4,7 @@ import amplifyConfig from "../aws-exports";
 import Location from "aws-sdk/clients/location";
 import mapboxgl from 'mapbox-gl/dist/mapbox-gl.js'
 import TextField from "@material-ui/core/TextField";
-import {Button} from "@material-ui/core";
+import {Button, Container} from "@material-ui/core";
 import './MapPage.css'
 import GeojsonHelper from "../Helpers/GeojsonHelper";
 import MapboxDraw from "@mapbox/mapbox-gl-draw/index";
@@ -20,6 +20,9 @@ const AWS = require("aws-sdk");
 const placeIndex = process.env.REACT_APP_PLACE_INDEX_NAME;
 const locationHelper = new LocationServiceHelper()
 Amplify.configure(amplifyConfig);
+
+let departurePtMarker = new Marker();
+let destinationPtMarker=new Marker();
 
 
 //Getting current user credentials
@@ -79,7 +82,7 @@ class Navigation extends Component{
     handleSearch=async () => {
         console.log(this.state.departurePoint)
         this.searchCoords("departureCoords",this.state.departurePoint)
-       this.searchCoords("destinationCoords",this.state.endingPoint)
+        this.searchCoords("destinationCoords",this.state.endingPoint)
 
 
 
@@ -101,7 +104,9 @@ class Navigation extends Component{
                 if (err) {
                     console.error(err)
                 } else if (response && response.Results.length > 0) {
-                    let marker = new Marker()
+                    let marker
+                    if(name==="departureCoords") marker=departurePtMarker
+                    if(name==="destinationCoords") marker=destinationPtMarker
                     console.log(response)
                     longitude = response.Summary.ResultBBox[0]
                     latitude = response.Summary.ResultBBox[1]
@@ -125,6 +130,9 @@ class Navigation extends Component{
     }
 
     calculateRoute=()=> {
+        map.fitBounds([this.state.departureCoords,this.state.destinationCoords],
+            {padding: {top: 100, bottom:300, left: 100, right: 100}})
+
         var params = {
             CalculatorName: process.env.REACT_APP_ROUTE_CALCULATOR, /* required */
             DeparturePosition: [this.state.departureCoords[0], this.state.departureCoords[1]],
@@ -136,7 +144,7 @@ class Navigation extends Component{
             //     DepartNow: true || false,
             //     DepartureTime: new Date || 'Wed Dec 31 1969 16:00:00 GMT-0800 (PST)' || 123456789,
             //     DistanceUnit: Kilometers | Miles,
-            //     IncludeLegGeometry: true || false,
+                IncludeLegGeometry: true,
             //     TravelMode: Car | Truck | Walking,
             //     TruckModeOptions: {
             //         AvoidFerries: true || false,
@@ -166,12 +174,12 @@ class Navigation extends Component{
             else {
                 var coordinates = []
                 console.log(data);           // successful response
-                data.Legs[0].Steps.map((item) => {
-                    coordinates.push(item.StartPosition)
-                    coordinates.push(item.EndPosition)
-
+                data.Legs[0].Geometry.LineString.map((item) => {
+                    coordinates.push(item)
                 })
                 console.log(coordinates)
+                if(map.getLayer("route")) map.removeLayer("route")
+                if(map.getSource("route")) map.removeSource("route")
 
                     map.addSource('route', {
                         'type': 'geojson',
@@ -193,8 +201,9 @@ class Navigation extends Component{
                             'line-cap': 'round'
                         },
                         'paint': {
-                            'line-color': 'black',
-                            'line-width': 8
+                            'line-color': '#009dff',
+                            'line-width': 8,
+                            'line-opacity': 0.5
                         }
                     });
 
@@ -203,7 +212,7 @@ class Navigation extends Component{
 
     render(){
         return (
-            <div id = {'mapPage'}>
+            <div id = {'mapPage'} maxWidth={"xl"}>
                 <div id={"sbContainer"}>
                     <TextField id="departurePoint" label="Enter starting point" type="outlined" value={this.state.departurePoint} onChange={e=>this.updateInputText(e)}/>
                     <TextField id="endingPoint" label="Enter destination" type="outlined" value={this.state.endingPoint} onChange={e=>this.updateInputText(e)}/>
