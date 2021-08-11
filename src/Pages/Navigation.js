@@ -4,7 +4,20 @@ import amplifyConfig from "../aws-exports";
 import Location from "aws-sdk/clients/location";
 import mapboxgl from 'mapbox-gl/dist/mapbox-gl.js'
 import TextField from "@material-ui/core/TextField";
-import {Button, Container} from "@material-ui/core";
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+
+import {
+    Accordion, AccordionDetails,
+    AccordionSummary,
+    Button,
+    Checkbox,
+    Container,
+    FormControl,
+    FormControlLabel,
+    InputLabel,
+    MenuItem,
+    Select
+} from "@material-ui/core";
 import './MapPage.css'
 import GeojsonHelper from "../Helpers/GeojsonHelper";
 import MapboxDraw from "@mapbox/mapbox-gl-draw/index";
@@ -12,6 +25,7 @@ import GeofenceHelper from "../Helpers/GeofenceHelper";
 import LocationServiceHelper from '../Helpers/LocationServiceHelper'
 import Geofence from "../Geofence/Geofence";
 import {Marker} from "mapbox-gl";
+import Typography from "@material-ui/core/Typography";
 let map;
 let credentials;
 let locationService;
@@ -62,7 +76,16 @@ class Navigation extends Component{
             departurePoint: "",
             endingPoint:"",
             departureCoords:null,
-            destinationCoords:null
+            destinationCoords:null,
+            travelMode:"Car",
+            date:new Date(),
+            departNow:true,
+            avoidFerries:false,
+            avoidTolls:false,
+            height: null,
+            length: null,
+            unit: "Select Unit",
+            width: null,
         };
     }
 
@@ -74,7 +97,8 @@ class Navigation extends Component{
 
     }
 
-    updateInputText=(e)=>{
+    handleStateChange=(e)=>{
+        console.log(e)
         this.setState({
             [e.target.id]:e.target.value
         });
@@ -128,10 +152,17 @@ class Navigation extends Component{
         console.log(this.state.destinationCoords)
         this.calculateRoute()
     }
+    handleCheckBoxChange=(e)=>{
+        this.setState({[e.target.name]:!this.state[e.target.name]})
+    }
+    handleSelectChange=(e)=>{
+        this.setState({[e.target.name]:e.target.value})
+
+    }
 
     calculateRoute=()=> {
         map.fitBounds([this.state.departureCoords,this.state.destinationCoords],
-            {padding: {top: 100, bottom:300, left: 100, right: 100}})
+            {padding: {top: 100, bottom:100, left: 100, right: 100}})
 
         var params = {
             CalculatorName: process.env.REACT_APP_ROUTE_CALCULATOR, /* required */
@@ -141,11 +172,11 @@ class Navigation extends Component{
             //         AvoidFerries: true || false,
             //         AvoidTolls: true || false
             //     },
-            //     DepartNow: true || false,
+            DepartNow: this.state.departNow,
             //     DepartureTime: new Date || 'Wed Dec 31 1969 16:00:00 GMT-0800 (PST)' || 123456789,
             //     DistanceUnit: Kilometers | Miles,
                 IncludeLegGeometry: true,
-            //     TravelMode: Car | Truck | Walking,
+                TravelMode: this.state.travelMode,
             //     TruckModeOptions: {
             //         AvoidFerries: true || false,
             //         AvoidTolls: true || false,
@@ -209,13 +240,121 @@ class Navigation extends Component{
 
                 }})
     }
+    handleDateChange=(e)=>{
+        this.state.date=e.target.value
+    }
 
     render(){
         return (
-            <div id = {'mapPage'} maxWidth={"xl"}>
-                <div id={"sbContainer"}>
-                    <TextField id="departurePoint" label="Enter starting point" type="outlined" value={this.state.departurePoint} onChange={e=>this.updateInputText(e)}/>
-                    <TextField id="endingPoint" label="Enter destination" type="outlined" value={this.state.endingPoint} onChange={e=>this.updateInputText(e)}/>
+            <div className={"xl"} id = {'mapPage'} >
+                <Container className={"xl"} id={"sbContainer"}>
+                    <TextField id="departurePoint" label="Enter starting point" type="outlined" value={this.state.departurePoint} onChange={e=>this.handleStateChange(e)}/>
+                    <TextField id="endingPoint" label="Enter destination" type="outlined" value={this.state.endingPoint} onChange={e=>this.handleStateChange(e)}/>
+                    <FormControl>
+                        <InputLabel id={"travelMode"} >Travel Mode</InputLabel>
+                        <Select
+                            name={"travelMode"}
+                            value={this.state.travelMode}
+                            onChange={this.handleSelectChange}
+                        >
+                            <MenuItem name={"travelMode"} value={"Car"}>Car</MenuItem>
+                            <MenuItem name={"travelMode"} value={"Truck"}>Truck</MenuItem>
+                            <MenuItem name={"travelMode"} value={"Walking"}>Walking</MenuItem>
+                        </Select>
+                    </FormControl>
+                    <Accordion>
+                        <AccordionSummary
+                            expandIcon={<ExpandMoreIcon />}
+                            aria-controls="panel1a-content"
+                            id="panel1a-header"
+                        >
+                            <Typography>Advanced Options</Typography>
+                        </AccordionSummary>
+                        <AccordionDetails>
+                            <FormControlLabel
+                                control={<Checkbox
+                                    name={"departNow"}
+                                    checked={this.state.departNow}
+                                    onChange={this.handleCheckBoxChange}
+                                />
+                                }
+                                label="Depart now"
+                                labelPlacement="end"
+                            />
+                            {this.state.departNow===false&&(
+                                <form
+                                    // className={classes.container}
+                                    noValidate>
+                                    <TextField
+                                        id="date"
+                                        label="Departure time"
+                                        type="datetime-local"
+                                        // className={classes.textField}
+                                        onChange={this.handleStateChange}
+                                        InputLabelProps={{
+                                            shrink: true,
+                                        }}
+                                    />
+                                </form>
+
+                            )}
+
+                            {(this.state.travelMode==="Truck"||this.state.travelMode==="Car")&&(
+                                <Container>
+                                <FormControlLabel
+                                control={<Checkbox
+                                name={"avoidFerries"}
+                                checked={this.state.avoidFerries}
+                                onChange={this.handleCheckBoxChange}
+                                />
+                            }
+                                label="Avoid Ferries"
+                                labelPlacement="end"
+                                />
+                                <FormControlLabel
+                                control={<Checkbox
+                                name={"avoidTolls"}
+                                checked={this.state.avoidTolls}
+                                onChange={this.handleCheckBoxChange}
+                                />
+                            }
+                                label="Avoid Tolls"
+                                labelPlacement="end"
+                                />
+                                </Container>
+                                )}
+
+
+                                {this.state.travelMode==="Truck"&&(
+                                    <Container>
+
+                                        <Typography>
+                                            Truck dimensions
+                                        </Typography>
+                                        <TextField id="length" label="Enter length" type="outlined" value={this.state.length} onChange={e=>this.handleStateChange(e)}/>
+                                        <TextField id="width" label="Enter width" type="outlined" value={this.state.width} onChange={e=>this.handleStateChange(e)}/>
+                                        <TextField id="height" label="Enter height" type="outlined" value={this.state.height} onChange={e=>this.handleStateChange(e)}/>
+                                        <FormControl>
+                                            <InputLabel id={"unit"} >Unit</InputLabel>
+                                            <Select
+                                                name={"unit"}
+                                                value={this.state.unit}
+                                                onChange={this.handleSelectChange}
+                                            >
+                                                <MenuItem name={"unit"} value={"Meters"}>Meters</MenuItem>
+                                                <MenuItem name={"unit"} value={"Feet"}>Feet</MenuItem>
+                                            </Select>
+                                        </FormControl>
+                                    </Container>
+
+                                )}
+
+
+
+
+                        </AccordionDetails>
+                    </Accordion>
+
 
                     <Button id={'navBtn'} variant="contained" color="primary" onClick={this.handleSearch} >
                         Search
@@ -227,7 +366,7 @@ class Navigation extends Component{
 
                     )}
 
-                </div>
+                </Container>
                 <div className='Map' ref={(x) => { this.container = x }}/>
             </div>
         )

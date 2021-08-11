@@ -9,20 +9,24 @@ import Navbar from './Components/Navbar'
 import GeofenceCreationPage from './Pages/GeofenceCreationPage'
 import GeofencePage from './Pages/GeofencePage'
 import Navigation from "./Pages/Navigation";
+import {Container} from "@material-ui/core";
 function App() {
     return (
         <div className="App">
             <HashRouter>
                 <Navbar/>
-                <Redirect to="/home" />
-                <Switch>
-                    <Route path ='/home' exact component={HomePage}/>
-                    <Route path ='/geofence' exact component={GeofencePage}/>
-                    <Route path ='/list-geofence' exact component={ListGeofencesPage}/>
-                    <Route path ='/navigation' exact component={Navigation}/>
+                <Container className={'xl'}>
+                    <Redirect to="/home" />
+                    <Switch>
+                        <Route path ='/home' exact component={HomePage}/>
+                        <Route path ='/geofence' exact component={GeofencePage}/>
+                        <Route path ='/list-geofence' exact component={ListGeofencesPage}/>
+                        <Route path ='/navigation' exact component={Navigation}/>
 
 
-                </Switch>
+                    </Switch>
+
+                </Container>
             </HashRouter>
         </div>
     );
