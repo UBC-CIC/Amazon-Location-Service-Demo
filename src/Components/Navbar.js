@@ -129,15 +129,15 @@ export default function Navbar() {
                     >
                         <MenuIcon />
                     </IconButton>
-                    <Typography variant="h6" noWrap>
-                        AWS Location Service demo
+                    <Typography variant="subtitle1" style={{ flex: 1 }}>
+                        Amazon Location Service Demo
                     </Typography>
 
-                    <Container>
+                    <div>
                         <Container className={classes.signOutButton}  >
-                            <Button onClick={signOut} variant={'contained'}>Sign out</Button>
+                            <Button onClick={signOut} variant="contained" color="secondary" style={{textTransform: 'none'}}>Sign Out</Button>
                         </Container>
-                    </Container>
+                    </div>
 
 
                 </Toolbar>

@@ -4,7 +4,7 @@ import amplifyConfig from "../aws-exports";
 import Location from "aws-sdk/clients/location";
 import mapboxgl from 'mapbox-gl/dist/mapbox-gl.js'
 import TextField from "@material-ui/core/TextField";
-import {Button} from "@material-ui/core";
+import {Button, Collapse} from "@material-ui/core";
 import './MapPage.css'
 import GeojsonHelper from "../Helpers/GeojsonHelper";
 import MapboxDraw from "@mapbox/mapbox-gl-draw/index";
@@ -12,6 +12,11 @@ import GeofenceHelper from "../Helpers/GeofenceHelper";
 import LocationServiceHelper from '../Helpers/LocationServiceHelper'
 import Geofence from "../Geofence/Geofence";
 import { withRouter } from "react-router-dom";
+import * as PropTypes from "prop-types";
+import CheckIcon from '@material-ui/icons/Check';
+import Alert from '@material-ui/lab/Alert';
+import IconButton from "@material-ui/core/IconButton";
+import CloseIcon from '@material-ui/icons/Close';
 
 let map;
 let marker;
@@ -65,14 +70,14 @@ async function constructMap(container){
 
 
 
-
-
 class GeofencePage extends Component{
     constructor(props) {
         super(props);
         this.state = {
             geofenceIdText:"",
-            geofenceArray:[]
+            geofenceArray:[],
+            alertOpen:false,
+            alertMessage:null
         };
         console.log(this.props)
     }
@@ -106,13 +111,19 @@ class GeofencePage extends Component{
                     Polygon: [geojsonHelper.determinePolygonOrientation(coordinates)]
                 }
             };
-            locationService.putGeofence(params, function (err, data) {
-                if (err) console.log(err, err.stack); // an error occurred
+            locationService.putGeofence(params,  (err, data)=> {
+                if (err){
+                    console.log(err, err.stack)
+                } // an error occurred
                 else {
+                    this.setState({
+                        alertMessage: "Geofence successfully added!",
+                        alertOpen: true}
+                        )
                     console.log(data)
                 }
             });
-            this.props.history.push('/list-geofence')
+            // this.props.history.push('/list-geofence')
         }
     }
 
@@ -157,7 +168,7 @@ class GeofencePage extends Component{
                     'source': geofenceArray[i].geofenceId,
                     'layout': {},
                     'paint': {
-                        'fill-color': 'orange',
+                        'fill-color': '#009dff',
                         'fill-opacity': [
                             'case',
                             ['boolean', ['feature-state', 'hover'], false],
@@ -172,9 +183,9 @@ class GeofencePage extends Component{
     }
 
     updateGeofenceIdText=(e)=>{
-        this.setState(({
+        this.setState({
             geofenceIdText:e.target.value
-        }))
+        })
     }
     //go to geofencePage
     geofencePage=()=>{
@@ -182,13 +193,35 @@ class GeofencePage extends Component{
     }
     render(){
         return (
+
             <div id = {'mapPage'}>
+                <Collapse in={this.state.alertOpen}>
+                    <Alert
+                        action={
+                            <IconButton
+                                aria-label="close"
+                                color="inherit"
+                                size="small"
+                                onClick={() => {
+                                    this.setState({alertOpen:false});
+                                }}
+                            >
+                                <CloseIcon fontSize="inherit"/>
+                            </IconButton>
+                        }
+                    >
+                        {this.state.alertMessage}
+                    </Alert>
+                </Collapse>
+
                 <div id={"sbContainer"}>
-                    <TextField id="textInput" label="Enter a unique geofence name" type="outlined" value={this.state.text} onChange={e=>this.updateGeofenceIdText(e)}/>
-                    <Button id={'navBtn'} variant="outlined" color="secondary" onClick={this.addGeofence} >
-                        Add geofence
+                    <TextField id="textInput" label="Enter an unique geofence name" type="outlined" value={this.state.text} onChange={e=>this.updateGeofenceIdText(e)}/>
+                    <Button  id={'navBtn'} variant="contained" color="primary" style={{textTransform: 'none'}}
+                             onClick={this.addGeofence} >
+                        Add Geofence
                     </Button>
-                    <Button id={'navBtn'} variant={'outlined'}color={'secondary'} onClick={this.geofencePage}>
+                    <Button id={'navBtn'} variant="contained" color="primary" style={{textTransform: 'none'}}
+                            onClick={this.geofencePage}>
                         List Geofence
                     </Button>
                 </div>

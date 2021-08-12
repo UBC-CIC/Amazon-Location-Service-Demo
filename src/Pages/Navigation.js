@@ -7,18 +7,19 @@ import TextField from "@material-ui/core/TextField";
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import {MuiPickersUtilsProvider} from "@material-ui/pickers";
 import { DateTimePicker } from "@material-ui/pickers";
+import PropTypes from 'prop-types';
 
 import {
     Accordion, AccordionDetails,
     AccordionSummary,
     Button,
     Checkbox,
-    Container,
+    Container, DialogActions,
     FormControl,
-    FormControlLabel,
+    FormControlLabel, FormGroup, Grid,
     InputLabel,
-    MenuItem,
-    Select
+    MenuItem, Modal,
+    Select, withStyles
 } from "@material-ui/core";
 import './MapPage.css'
 import GeojsonHelper from "../Helpers/GeojsonHelper";
@@ -40,6 +41,33 @@ Amplify.configure(amplifyConfig);
 let departurePtMarker = new Marker();
 let destinationPtMarker=new Marker();
 
+const styles = theme => ({
+    root: {
+        flexGrow: 1,
+    },
+    paper: {
+        position: 'absolute',
+        width: 500,
+        backgroundColor: theme.palette.background.paper,
+        border: '2px solid #000',
+        boxShadow: theme.shadows[5],
+        padding: theme.spacing(2, 4, 3),
+
+        top: "50%",
+        left: "50%",
+        right: "auto",
+        bottom: "auto",
+
+        transform:" translate(-50%, -50%)"
+
+    },
+    unitSelect:{
+        width:"100px"
+    },
+    searchItems:{
+        marginRight:"20px"
+    }
+});
 
 //Getting current user credentials
 async function getLocationService(){
@@ -71,6 +99,8 @@ async function constructMap(container){
 
 
 
+
+
 class Navigation extends Component{
     constructor(props) {
         super(props);
@@ -89,7 +119,8 @@ class Navigation extends Component{
             dimensionUnit: null,
             width: null,
             weightUnit:null,
-            weight:null
+            weight:null,
+            modalOpen:false
         };
     }
 
@@ -263,8 +294,14 @@ class Navigation extends Component{
                 }})
     }
     handleDateChange=(e)=>{
-        this.state.date=e
+        this.setState({date:e})
     }
+     handleClose = () => {
+        this.setState({modalOpen:false});
+    };
+    handleOpen = () => {
+        this.setState({modalOpen:true});
+    };
 
     render(){
         const disableSearch = !(this.state.departurePoint&&this.state.endingPoint)
@@ -273,131 +310,215 @@ class Navigation extends Component{
             width!==null&&dimensionUnit!==null&&weightUnit!==null
         const otherTravelModes= this.state.travelMode==="Walking"||this.state.travelMode==="Car"
         const disabled= !((this.state.travelMode==="Truck")?checkTruck:otherTravelModes)
+        const { classes } = this.props;
 
         return (
             <div className={"xl"} id = {'mapPage'} >
                 <Container className={"xl"} id={"sbContainer"}>
-                    <TextField id="departurePoint" label="Enter starting point" type="outlined" value={this.state.departurePoint} onChange={e=>this.handleStateChange(e)}/>
-                    <TextField id="endingPoint" label="Enter destination" type="outlined" value={this.state.endingPoint} onChange={e=>this.handleStateChange(e)}/>
+
+                    <TextField id="departurePoint" label="Enter starting point" type="outlined"
+                               value={this.state.departurePoint} onChange={e=>this.handleStateChange(e)}
+                                className={classes.searchItems}/>
+                    <TextField id="endingPoint" label="Enter destination" type="outlined"
+                               value={this.state.endingPoint} onChange={e=>this.handleStateChange(e)}
+                               className={classes.searchItems}/>
                     <FormControl>
                         <InputLabel id={"travelMode"} >Travel Mode</InputLabel>
                         <Select
                             name={"travelMode"}
                             value={this.state.travelMode}
                             onChange={this.handleSelectChange}
+                            className={classes.unitSelect}
+                            style={{marginRight: '20px'}}
+
                         >
                             <MenuItem name={"travelMode"} value={"Car"}>Car</MenuItem>
                             <MenuItem name={"travelMode"} value={"Truck"}>Truck</MenuItem>
                             <MenuItem name={"travelMode"} value={"Walking"}>Walking</MenuItem>
                         </Select>
                     </FormControl>
-                    <Accordion>
-                        <AccordionSummary
-                            expandIcon={<ExpandMoreIcon />}
-                            aria-controls="panel1a-content"
-                            id="panel1a-header"
-                        >
-                            <Typography>Advanced Options</Typography>
-                        </AccordionSummary>
-                        <AccordionDetails>
+                    <Button variant="contained" color="primary"
+                            style={{textTransform: 'none'}} onClick={this.handleOpen}
+                            className={classes.searchItems}>Advanced Options</Button>
+                    <Modal
+                        open={this.state.modalOpen}
+                        onClose={this.handleClose}
+                        aria-labelledby="simple-modal-title"
+                        aria-describedby="simple-modal-description"
+
+                    >
+                        <div
+                            // style={modalStyle}
+                             className={classes.paper}>
+                            <Grid  container spacing={1}>
+                                <Grid item xs={12}>
+
+                                    <Typography>
+                                        Depart Time
+                                    </Typography>
+                                </Grid>
+
+
+                                <Grid item xs={6}>
+
                             <FormControlLabel
-                                control={<Checkbox
-                                    name={"departNow"}
-                                    checked={this.state.departNow}
-                                    onChange={this.handleCheckBoxChange}
-                                />
-                                }
-                                label="Depart now"
-                                labelPlacement="end"
+                            control={<Checkbox
+                                name={"departNow"}
+                                checked={this.state.departNow}
+                                onChange={this.handleCheckBoxChange}
                             />
-                            {this.state.departNow===false&&(
-                                <DateTimePicker
-                                    label="DateTimePicker"
-                                    id={"date"}
-                                    value={this.state.date}
-                                    inputVariant="outlined"
-                                    onChange={this.handleDateChange}
-                                    disablePast={true}
-                                />
-
-                            )}
-
-                            {(this.state.travelMode==="Truck"||this.state.travelMode==="Car")&&(
-                                <Container>
-                                <FormControlLabel
-                                control={<Checkbox
-                                name={"avoidFerries"}
-                                checked={this.state.avoidFerries}
-                                onChange={this.handleCheckBoxChange}
-                                />
                             }
-                                label="Avoid Ferries"
-                                labelPlacement="end"
-                                />
+                            label="Depart now"
+                            labelPlacement="end"
+                        />
+                                </Grid>
+                                <Grid item xs={6}>
+
+                                {this.state.departNow===false&&(
+                            <DateTimePicker
+                                label="DateTimePicker"
+                                id={"date"}
+                                value={this.state.date}
+                                inputVariant="outlined"
+                                onChange={this.handleDateChange}
+                                disablePast={true}
+                            />
+
+                        )}
+                                </Grid>
+                            </Grid>
+
+                        {(this.state.travelMode==="Truck"||this.state.travelMode==="Car")&&(
+                            <Grid container spacing={1}>
+                                <Grid item xs={12}>
+
+                                    <Typography>
+                                        Options
+                                    </Typography>
+                                </Grid>
+
+                                <Grid item xs={6}>
+
                                 <FormControlLabel
-                                control={<Checkbox
-                                name={"avoidTolls"}
-                                checked={this.state.avoidTolls}
-                                onChange={this.handleCheckBoxChange}
+                                    control={<Checkbox
+                                        name={"avoidFerries"}
+                                        checked={this.state.avoidFerries}
+                                        onChange={this.handleCheckBoxChange}
+                                    />
+                                    }
+                                    label="Avoid Ferries"
+                                    labelPlacement="end"
                                 />
-                            }
-                                label="Avoid Tolls"
-                                labelPlacement="end"
+                                </Grid>
+                                <Grid item xs={6}>
+
+                                <FormControlLabel
+                                    control={<Checkbox
+                                        name={"avoidTolls"}
+                                        checked={this.state.avoidTolls}
+                                        onChange={this.handleCheckBoxChange}
+                                    />
+                                    }
+                                    label="Avoid Tolls"
+                                    labelPlacement="end"
                                 />
-                                </Container>
-                                )}
+                                </Grid>
+                            </Grid>
+
+                        )}
 
 
-                                {this.state.travelMode==="Truck"&&(
-                                    <Container>
+                        {this.state.travelMode==="Truck"&&(
+                            <Grid container spacing={1}>
 
-                                        <Typography>
-                                            Truck dimensions
-                                        </Typography>
-                                        <TextField id="length" label="Enter length" type="outlined" value={this.state.length} onChange={e=>this.handleNumbersStateChange(e)}/>
-                                        <TextField id="width" label="Enter width" type="outlined" value={this.state.width} onChange={e=>this.handleNumbersStateChange(e)}/>
-                                        <TextField id="height" label="Enter height" type="outlined" value={this.state.height} onChange={e=>this.handleNumbersStateChange(e)}/>
-                                        <FormControl>
-                                            <InputLabel id={"dimensionUnit"} >Unit</InputLabel>
-                                            <Select
-                                                name={"dimensionUnit"}
-                                                value={this.state.dimensionUnit}
-                                                onChange={this.handleSelectChange}
-                                            >
-                                                <MenuItem name={"dimensionUnit"} value={"Meters"}>Meters</MenuItem>
-                                                <MenuItem name={"dimensionUnit"} value={"Feet"}>Feet</MenuItem>
-                                            </Select>
-                                        </FormControl>
-                                        <TextField id="weight" label="Enter weight" type="outlined" value={this.state.weight} onChange={e=>this.handleNumbersStateChange(e)}/>
-                                        <FormControl>
-                                            <InputLabel id={"weightUnit"} >Weight Unit</InputLabel>
-                                            <Select
-                                                name={"weightUnit"}
-                                                value={this.state.weightUnit}
-                                                onChange={this.handleSelectChange}
-                                            >
-                                                <MenuItem name={"weightUnit"} value={"Kilograms"}>Meters</MenuItem>
-                                                <MenuItem name={"weightUnit"} value={"Pounds"}>Feet</MenuItem>
-                                            </Select>
-                                        </FormControl>
+                                <Grid item xs={12}>
 
-                                    </Container>
+                                <Typography>
+                                    Truck dimensions
+                                </Typography>
+                                </Grid>
+                                <Grid item xs={6}>
+
+                                <TextField id="length" label="Enter length" type="outlined"
+                                           value={this.state.length} onChange={e=>this.handleNumbersStateChange(e)}/>
+                                </Grid>
+                                <Grid item xs={6}>
+
+                                <TextField id="width" label="Enter width" type="outlined"
+                                           value={this.state.width} onChange={e=>this.handleNumbersStateChange(e)}/>
+                                </Grid>
+                                <Grid item xs={6}>
+
+                                <TextField id="height" label="Enter height" type="outlined"
+                                           value={this.state.height} onChange={e=>this.handleNumbersStateChange(e)}/>
+                                </Grid>
+                                <Grid item xs={6}>
+
+                                <FormControl>
+                                    <InputLabel id={"dimensionUnit"} >Unit</InputLabel>
+                                    <Select
+                                        name={"dimensionUnit"}
+                                        value={this.state.dimensionUnit}
+                                        onChange={this.handleSelectChange}
+                                        className={classes.unitSelect}
+                                    >
+                                        <MenuItem name={"dimensionUnit"} value={"Meters"}>Meters</MenuItem>
+                                        <MenuItem name={"dimensionUnit"} value={"Feet"}>Feet</MenuItem>
+                                    </Select>
+                                </FormControl>
+                                </Grid>
+                                <Grid item xs={12}>
+
+                                    <Typography>
+                                        Truck Weight
+                                    </Typography>
+                                </Grid>
+                                <Grid item xs={6}>
+
+                                <TextField id="weight" label="Enter weight" type="outlined"
+                                           value={this.state.weight} onChange={e=>this.handleNumbersStateChange(e)}/>
+                                </Grid>
+                                <Grid item xs={6}>
+
+                                <FormControl>
+                                    <InputLabel id={"weightUnit"} >Unit</InputLabel>
+                                    <Select
+                                        className={classes.unitSelect}
+
+                                        name={"weightUnit"}
+                                        value={this.state.weightUnit}
+                                        onChange={this.handleSelectChange}
+                                    >
+                                        <MenuItem name={"weightUnit"} value={"Kilograms"}>Kilograms</MenuItem>
+                                        <MenuItem name={"weightUnit"} value={"Pounds"}>Pounds</MenuItem>
+                                    </Select>
+                                </FormControl>
+                                </Grid>
+                            </Grid>
 
 
-                                )}
+                        )}
+                            <DialogActions>
+                                <Button onClick={this.handleClose} color="primary">
+                                    Close
+                                </Button>
+                            </DialogActions>
+
+                        </div>
+
+
+                    </Modal>
 
 
 
 
-                        </AccordionDetails>
-                    </Accordion>
-
-
-                    <Button id={'navBtn'} variant="contained" color="primary" onClick={this.handleSearch} disabled={disableSearch} >
+                    <Button id={'navBtn'} variant="contained" color="primary" style={{textTransform: 'none'}}
+                            onClick={this.handleSearch} disabled={disableSearch} >
                         Search
                     </Button>
                     {(this.state.destinationCoords&&this.state.departureCoords)&&(
-                        <Button id={'navBtn'} variant="contained" color="primary" onClick={this.handleRoute} disabled={disabled} >
+                        <Button id={'navBtn'} variant="contained" color="primary" style={{textTransform: 'none'}}
+                                onClick={this.handleRoute} disabled={disabled} >
                             Calculate
                         </Button>
 
@@ -409,4 +530,8 @@ class Navigation extends Component{
         )
     }
 }
-export default Navigation;
+Navigation.propTypes = {
+    classes: PropTypes.object.isRequired,
+};
+
+export default withStyles(styles)(Navigation);

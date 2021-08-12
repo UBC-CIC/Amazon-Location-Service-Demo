@@ -138,8 +138,8 @@ class ListGeofencesPage extends Component{
     render(){
         return (
             <Container>
-                <Button id={'backbtn'} variant={'outlined'}color={'secondary'} onClick={this.backToMap}>
-                        Back to Map
+                <Button id={'backbtn'} variant="contained" color="primary" style={{textTransform: 'none'}} onClick={this.backToMap}>
+                        Go Back
                 </Button>
                 <TableContainer component={Paper}>
                     <Table className={'table'} size="small" aria-label="a dense table">
@@ -158,7 +158,7 @@ class ListGeofencesPage extends Component{
                                     </TableCell>
                                     <TableCell>{JSON.stringify(row.createTime)}</TableCell>
                                     <TableCell>{row.status}</TableCell>
-                                    <td> <Button id={'deletebtn'} variant={'outlined'}color={'secondary'}
+                                    <td> <Button id={'deletebtn'} variant="contained" color="primary" style={{textTransform: 'none'}}
                                             onClick={this.handleDelete.bind(this, item)}>
                                         Delete
                                     </Button></td>

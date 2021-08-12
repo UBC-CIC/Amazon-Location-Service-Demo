@@ -119,7 +119,7 @@ class HomePage extends Component{
             <div id = {'mapPage'}>
                 <div id={"sbContainer"}>
                     <TextField id="textInput" label="Enter location" type="outlined" value={this.state.text} onChange={e=>this.updateInputText(e)}/>
-                    <Button id={'navBtn'} variant="contained" color="primary" onClick={this.handleSearch} >
+                    <Button id={'navBtn'} variant="contained" color="primary" style={{textTransform: 'none'}} onClick={this.handleSearch} >
                         Search
                     </Button>
                 </div>
