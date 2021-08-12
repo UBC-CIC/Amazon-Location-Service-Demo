@@ -78,14 +78,16 @@ class Navigation extends Component{
             departureCoords:null,
             destinationCoords:null,
             travelMode:"Car",
-            date:new Date(),
+            date:null,
             departNow:true,
             avoidFerries:false,
             avoidTolls:false,
             height: null,
             length: null,
-            unit: "Select Unit",
+            dimensionUnit: null,
             width: null,
+            weightUnit:null,
+            weight:null
         };
     }
 
@@ -159,6 +161,16 @@ class Navigation extends Component{
         this.setState({[e.target.name]:e.target.value})
 
     }
+    handleNumbersStateChange=(e)=>{
+        const re = /^[0-9\b]+$/;
+        if (e.target.value === '' || re.test(e.target.value)) {
+            console.log(e.target.value)
+
+            this.setState({
+                [e.target.id]: e.target.value
+            });
+        }
+    }
 
     calculateRoute=()=> {
         map.fitBounds([this.state.departureCoords,this.state.destinationCoords],
@@ -168,29 +180,10 @@ class Navigation extends Component{
             CalculatorName: process.env.REACT_APP_ROUTE_CALCULATOR, /* required */
             DeparturePosition: [this.state.departureCoords[0], this.state.departureCoords[1]],
             DestinationPosition: [this.state.destinationCoords[0], this.state.destinationCoords[1]],
-            //     CarModeOptions: {
-            //         AvoidFerries: true || false,
-            //         AvoidTolls: true || false
-            //     },
             DepartNow: this.state.departNow,
-            //     DepartureTime: new Date || 'Wed Dec 31 1969 16:00:00 GMT-0800 (PST)' || 123456789,
             //     DistanceUnit: Kilometers | Miles,
                 IncludeLegGeometry: true,
                 TravelMode: this.state.travelMode,
-            //     TruckModeOptions: {
-            //         AvoidFerries: true || false,
-            //         AvoidTolls: true || false,
-            //         Dimensions: {
-            //             Height: 'NUMBER_VALUE',
-            //             Length: 'NUMBER_VALUE',
-            //             Unit: Meters | Feet,
-            //             Width: 'NUMBER_VALUE'
-            //         },
-            //         Weight: {
-            //             Total: 'NUMBER_VALUE',
-            //             Unit: Kilograms | Pounds
-            //         }
-            //     },
             //     WaypointPositions: [
             //         [
             //             'NUMBER_VALUE',
@@ -199,6 +192,33 @@ class Navigation extends Component{
             //         /* more items */
             //     ]
         };
+        if(!this.state.departNow){
+            params["DepartureTime"]= this.state.date
+        }
+        if(this.state.travelMode==="Car"){
+            params["CarModeOptions"]={
+                AvoidFerries: this.state.avoidFerries,
+                AvoidTolls: this.state.avoidTolls
+            }
+        }
+        if(this.state.travelMode==="Truck"){
+            params['TruckModeOptions']={
+                AvoidFerries: this.state.avoidFerries,
+                AvoidTolls: this.state.avoidTolls,
+                Dimensions: {
+                    Height: this.state.height,
+                    Length: this.state.length,
+                    Unit: this.state.dimensionUnit,
+                    Width: this.state.width
+                },
+                Weight: {
+                    Total: this.state.weight,
+                    Unit: this.state.weightUnit
+                }
+            }          //     TruckModeOptions: {
+            //     },
+
+        }
         console.log(params)
         locationService.calculateRoute(params, function (err, data) {
             if (err) console.log(err, err.stack); // an error occurred
@@ -245,6 +265,12 @@ class Navigation extends Component{
     }
 
     render(){
+        const{height,weight,length,width,dimensionUnit,weightUnit} = this.state
+        const checkTruck = this.state.travelMode==="Truck"&&height!==null&&weight!==null&&length!==null&&
+            width!==null&&dimensionUnit!==null&&weightUnit!==null
+        const otherTravelModes= this.state.travelMode==="Walking"||this.state.travelMode==="Car"
+        const disabled= !((this.state.travelMode==="Truck")?checkTruck:otherTravelModes)
+
         return (
             <div className={"xl"} id = {'mapPage'} >
                 <Container className={"xl"} id={"sbContainer"}>
@@ -331,21 +357,35 @@ class Navigation extends Component{
                                         <Typography>
                                             Truck dimensions
                                         </Typography>
-                                        <TextField id="length" label="Enter length" type="outlined" value={this.state.length} onChange={e=>this.handleStateChange(e)}/>
-                                        <TextField id="width" label="Enter width" type="outlined" value={this.state.width} onChange={e=>this.handleStateChange(e)}/>
-                                        <TextField id="height" label="Enter height" type="outlined" value={this.state.height} onChange={e=>this.handleStateChange(e)}/>
+                                        <TextField id="length" label="Enter length" type="outlined" value={this.state.length} onChange={e=>this.handleNumbersStateChange(e)}/>
+                                        <TextField id="width" label="Enter width" type="outlined" value={this.state.width} onChange={e=>this.handleNumbersStateChange(e)}/>
+                                        <TextField id="height" label="Enter height" type="outlined" value={this.state.height} onChange={e=>this.handleNumbersStateChange(e)}/>
                                         <FormControl>
-                                            <InputLabel id={"unit"} >Unit</InputLabel>
+                                            <InputLabel id={"dimensionUnit"} >Unit</InputLabel>
                                             <Select
-                                                name={"unit"}
-                                                value={this.state.unit}
+                                                name={"dimensionUnit"}
+                                                value={this.state.dimensionUnit}
                                                 onChange={this.handleSelectChange}
                                             >
-                                                <MenuItem name={"unit"} value={"Meters"}>Meters</MenuItem>
-                                                <MenuItem name={"unit"} value={"Feet"}>Feet</MenuItem>
+                                                <MenuItem name={"dimensionUnit"} value={"Meters"}>Meters</MenuItem>
+                                                <MenuItem name={"dimensionUnit"} value={"Feet"}>Feet</MenuItem>
                                             </Select>
                                         </FormControl>
+                                        <TextField id="weight" label="Enter weight" type="outlined" value={this.state.weight} onChange={e=>this.handleNumbersStateChange(e)}/>
+                                        <FormControl>
+                                            <InputLabel id={"weightUnit"} >Weight Unit</InputLabel>
+                                            <Select
+                                                name={"weightUnit"}
+                                                value={this.state.weightUnit}
+                                                onChange={this.handleSelectChange}
+                                            >
+                                                <MenuItem name={"weightUnit"} value={"Kilograms"}>Meters</MenuItem>
+                                                <MenuItem name={"weightUnit"} value={"Pounds"}>Feet</MenuItem>
+                                            </Select>
+                                        </FormControl>
+
                                     </Container>
+
 
                                 )}
 
@@ -360,7 +400,7 @@ class Navigation extends Component{
                         Search
                     </Button>
                     {(this.state.destinationCoords&&this.state.departureCoords)&&(
-                        <Button id={'navBtn'} variant="contained" color="primary" onClick={this.handleRoute} >
+                        <Button id={'navBtn'} variant="contained" color="primary" onClick={this.handleRoute} disabled={disabled} >
                             Calculate
                         </Button>
 
