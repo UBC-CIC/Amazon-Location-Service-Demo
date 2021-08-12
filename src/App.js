@@ -10,8 +10,13 @@ import GeofenceCreationPage from './Pages/GeofenceCreationPage'
 import GeofencePage from './Pages/GeofencePage'
 import Navigation from "./Pages/Navigation";
 import {Container} from "@material-ui/core";
+import DateFnsUtils from '@date-io/date-fns';
+import {MuiPickersUtilsProvider} from "@material-ui/pickers";
+
 function App() {
     return (
+        <MuiPickersUtilsProvider utils={DateFnsUtils}>
+
         <div className="App">
             <HashRouter>
                 <Navbar/>
@@ -29,6 +34,7 @@ function App() {
                 </Container>
             </HashRouter>
         </div>
+        </MuiPickersUtilsProvider>
     );
 }
 

@@ -1,10 +1,12 @@
-import React, { Component } from 'react';
+import React, { Component,Fragment } from 'react';
 import Amplify, {Auth} from "aws-amplify";
 import amplifyConfig from "../aws-exports";
 import Location from "aws-sdk/clients/location";
 import mapboxgl from 'mapbox-gl/dist/mapbox-gl.js'
 import TextField from "@material-ui/core/TextField";
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+import {MuiPickersUtilsProvider} from "@material-ui/pickers";
+import { DateTimePicker } from "@material-ui/pickers";
 
 import {
     Accordion, AccordionDetails,
@@ -78,7 +80,7 @@ class Navigation extends Component{
             departureCoords:null,
             destinationCoords:null,
             travelMode:"Car",
-            date:null,
+            date:new Date(),
             departNow:true,
             avoidFerries:false,
             avoidTolls:false,
@@ -193,7 +195,7 @@ class Navigation extends Component{
             //     ]
         };
         if(!this.state.departNow){
-            params["DepartureTime"]= this.state.date
+            params["DepartureTime"]= new Date(this.state.date)
         }
         if(this.state.travelMode==="Car"){
             params["CarModeOptions"]={
@@ -261,10 +263,11 @@ class Navigation extends Component{
                 }})
     }
     handleDateChange=(e)=>{
-        this.state.date=e.target.value
+        this.state.date=e
     }
 
     render(){
+        const disableSearch = !(this.state.departurePoint&&this.state.endingPoint)
         const{height,weight,length,width,dimensionUnit,weightUnit} = this.state
         const checkTruck = this.state.travelMode==="Truck"&&height!==null&&weight!==null&&length!==null&&
             width!==null&&dimensionUnit!==null&&weightUnit!==null
@@ -308,20 +311,14 @@ class Navigation extends Component{
                                 labelPlacement="end"
                             />
                             {this.state.departNow===false&&(
-                                <form
-                                    // className={classes.container}
-                                    noValidate>
-                                    <TextField
-                                        id="date"
-                                        label="Departure time"
-                                        type="datetime-local"
-                                        // className={classes.textField}
-                                        onChange={this.handleStateChange}
-                                        InputLabelProps={{
-                                            shrink: true,
-                                        }}
-                                    />
-                                </form>
+                                <DateTimePicker
+                                    label="DateTimePicker"
+                                    id={"date"}
+                                    value={this.state.date}
+                                    inputVariant="outlined"
+                                    onChange={this.handleDateChange}
+                                    disablePast={true}
+                                />
 
                             )}
 
@@ -396,7 +393,7 @@ class Navigation extends Component{
                     </Accordion>
 
 
-                    <Button id={'navBtn'} variant="contained" color="primary" onClick={this.handleSearch} >
+                    <Button id={'navBtn'} variant="contained" color="primary" onClick={this.handleSearch} disabled={disableSearch} >
                         Search
                     </Button>
                     {(this.state.destinationCoords&&this.state.departureCoords)&&(
