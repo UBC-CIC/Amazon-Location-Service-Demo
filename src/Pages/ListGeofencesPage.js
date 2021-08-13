@@ -8,14 +8,11 @@ import TableContainer from '@material-ui/core/TableContainer';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import Paper from '@material-ui/core/Paper';
-import GeofenceHelper from "../Helpers/GeofenceHelper";
 import * as AWS from "aws-sdk";
 import amplifyConfig from "../aws-exports";
 import {Auth} from "aws-amplify";
-import Geofence from "../Geofence/Geofence";
 
 
-const geofenceService = new GeofenceHelper();
 
 let credentials;
 let locationService;
@@ -67,9 +64,12 @@ class ListGeofencesPage extends Component{
             if (err) console.log(err);
             if (response && response.Entries.length>0) {
                 for (let i = 0; i < response.Entries.length; i++) {
-                    let geofence = new Geofence(response.Entries[i].GeofenceId,response.Entries[i].Geometry.Polygon,
-                        response.Entries[i].CreateTime, response.Entries[i].Status)
-                    geofenceArray.push(geofence)
+                    geofenceArray.push({
+                        geofenceId:response.Entries[i].GeofenceId,
+                        coordinates:response.Entries[i].Geometry.Polygon,
+                        createTime:response.Entries[i].CreateTime,
+                        status:response.Entries[i].Status
+                    })
                 }
             }
             this.setState({
@@ -125,9 +125,13 @@ class ListGeofencesPage extends Component{
             if (err) console.log(err);
             if (response && response.Entries.length>0) {
                 for (let i = 0; i < response.Entries.length; i++) {
-                    let geofence = new Geofence(response.Entries[i].GeofenceId,response.Entries[i].Geometry.Polygon,
-                        response.Entries[i].CreateTime, response.Entries[i].Status)
-                    geofenceArray.push(geofence)
+                    geofenceArray.push({
+                        geofenceId:response.Entries[i].GeofenceId,
+                        coordinates:response.Entries[i].Geometry.Polygon,
+                        createTime:response.Entries[i].CreateTime,
+                        status:response.Entries[i].Status,
+
+                    })
                 }
             }
         });

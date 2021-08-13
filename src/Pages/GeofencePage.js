@@ -7,9 +7,7 @@ import {Button, Collapse} from "@material-ui/core";
 import './MapPage.css'
 import GeojsonHelper from "../Helpers/GeojsonHelper";
 import MapboxDraw from "@mapbox/mapbox-gl-draw/index";
-import GeofenceHelper from "../Helpers/GeofenceHelper";
 import LocationServiceHelper from '../Helpers/LocationServiceHelper'
-import Geofence from "../Geofence/Geofence";
 import {withRouter} from "react-router-dom";
 import Alert from '@material-ui/lab/Alert';
 import IconButton from "@material-ui/core/IconButton";
@@ -23,9 +21,7 @@ let draw;
 const geofenceCollection = process.env.REACT_APP_GEOFENCE_COLLECTION;
 const XRegExp = require('xregexp');
 const AWS = require("aws-sdk");
-const placeIndex = process.env.REACT_APP_PLACE_INDEX_NAME;
 const geojsonHelper = new GeojsonHelper()
-const geofenceHelper = new GeofenceHelper()
 const locationHelper = new LocationServiceHelper()
 Amplify.configure(amplifyConfig);
 
@@ -113,13 +109,16 @@ class GeofencePage extends Component{
                 } // an error occurred
                 else {
                     this.setState({
+                            geofenceIdText:"",
                         alertMessage: "Geofence successfully added!",
-                        alertOpen: true}
+                        alertOpen: true,
+
+                        }
                         )
-                    console.log(data)
+                    draw.deleteAll()
+                    this.props.history.push("/list-geofence")
                 }
             });
-            // this.props.history.push('/list-geofence')
         }
     }
 
@@ -134,9 +133,13 @@ class GeofencePage extends Component{
             if (err) console.log(err);
             if (response && response.Entries.length>0) {
                 for (let i = 0; i < response.Entries.length; i++) {
-                    let geofence = new Geofence(response.Entries[i].GeofenceId,response.Entries[i].Geometry.Polygon,
-                        response.Entries[i].CreateTime, response.Entries[i].Status)
-                    geofenceArray.push(geofence)
+                    geofenceArray.push({
+                        geofenceId:response.Entries[i].GeofenceId,
+                        coordinates:response.Entries[i].Geometry.Polygon,
+                        createTime:response.Entries[i].CreateTime,
+                        status:response.Entries[i].Status,
+
+                    })
                 }
                 this.renderGeofence(geofenceArray)
             }
@@ -211,7 +214,8 @@ class GeofencePage extends Component{
                 </Collapse>
 
                 <div id={"sbContainer"}>
-                    <TextField id="textInput" label="Enter an unique geofence name" type="outlined" value={this.state.text} onChange={e=>this.updateGeofenceIdText(e)}/>
+                    <TextField id="textInput" label="Enter an unique geofence name" type="outlined"
+                               value={this.state.geofenceIdText} onChange={e=>this.updateGeofenceIdText(e)}/>
                     <Button  id={'navBtn'} variant="contained" color="primary" style={{textTransform: 'none'}}
                              onClick={this.addGeofence} >
                         Add Geofence
