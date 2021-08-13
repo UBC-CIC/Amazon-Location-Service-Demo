@@ -20,7 +20,7 @@ import {Link} from "react-router-dom";
 import MapIcon from '@material-ui/icons/Map';
 import EditLocationIcon from '@material-ui/icons/EditLocation';
 import {Auth} from "aws-amplify";
-
+import ExploreIcon from '@material-ui/icons/Explore';
 const drawerWidth = 240;
 
 const useStyles = makeStyles((theme) => ({
@@ -170,7 +170,7 @@ export default function Navbar() {
                         <ListItemText primary={"Geofence"} />
                     </ListItem>
                     <ListItem component={Link} to="/navigation">
-                        <ListItemIcon>{<EditLocationIcon />}</ListItemIcon>
+                        <ListItemIcon>{<ExploreIcon />}</ListItemIcon>
                         <ListItemText primary={"Navigation"} />
                     </ListItem>
 

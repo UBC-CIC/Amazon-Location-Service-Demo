@@ -1,7 +1,7 @@
 # Amazon Location Service Demo -- React JS
 
 ## Project Overview
-This project provides a deployable demo that showcases most features for [Amazon Location Service](https://aws.amazon.com/location).
+This project provides a deployable demo that showcases lots of features from [Amazon Location Service](https://aws.amazon.com/location).
 
 ### Features showcased in this app
 - Maps (Visualize location information)
@@ -9,7 +9,7 @@ This project provides a deployable demo that showcases most features for [Amazon
 - Routes (Calculate routes with different transportation and departure time options)
 - Geofence (Create, list, delete geofence)
 
-See all features available on Location Service [Here](https://aws.amazon.com/location/features/)
+See all features available on Amazon Location Service [Here](https://aws.amazon.com/location/features/)
 
 ### Simple Architecture Overview
 The users sign up using a secured login through [Amazon Cognito](https://aws.amazon.com/cognito/) into a [ReactJS](https://reactjs.org/)
