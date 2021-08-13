@@ -3,7 +3,7 @@
 ## Project Overview
 This project provides a deployable demo that showcases most features for [Amazon Location Service](https://aws.amazon.com/location).
 
-###Features showcased in this app
+### Features showcased in this app
 - Maps (Visualize location information)
 - Places (Geocoding/Reverse Geocoding)
 - Routes (Calculate routes with different transportation and departure time options)
@@ -11,7 +11,7 @@ This project provides a deployable demo that showcases most features for [Amazon
 
 See all features available on Location Service [Here](https://aws.amazon.com/location/features/)
 
-###Simple Architecture Overview
+### Simple Architecture Overview
 The users sign up using a secured login through [Amazon Cognito](https://aws.amazon.com/cognito/) into a [ReactJS](https://reactjs.org/)
 Web Application hosted via [AWS Amplify](https://aws.amazon.com/amplify/).
 
