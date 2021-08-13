@@ -28,9 +28,7 @@ import Typography from "@material-ui/core/Typography";
 let map;
 let credentials;
 let locationService;
-let draw;
 const AWS = require("aws-sdk");
-const placeIndex = process.env.REACT_APP_PLACE_INDEX_NAME;
 const locationHelper = new LocationServiceHelper()
 Amplify.configure(amplifyConfig);
 

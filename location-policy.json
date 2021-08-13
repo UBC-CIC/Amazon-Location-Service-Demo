@@ -6,31 +6,18 @@
             "Effect": "Allow",
             "Action": [
                 "geo:SearchPlaceIndexForText",
-                "geo:DescribeMap",
-                "geo:BatchGetDevicePosition",
                 "geo:GetMapGlyphs",
                 "geo:PutGeofence",
-                "geo:GetDevicePositionHistory",
-                "geo:DescribeTracker",
                 "geo:GetMapSprites",
                 "geo:BatchDeleteGeofence",
                 "geo:GetMapStyleDescriptor",
-                "geo:ListGeofences",
-                "geo:GetDevicePosition",
-                "geo:GetGeofence",
-                "geo:DescribePlaceIndex",
-                "geo:DescribeGeofenceCollection",
                 "geo:SearchPlaceIndexForPosition",
-                "geo:ListTrackerConsumers",
-                "geo:GetMapTileJson",
+                "geo:ListGeofences",
+                "geo:CalculateRoute",
+                "geo:GetGeofence",
                 "geo:GetMapTile"
             ],
-            "Resource": [
-                "arn:aws:geo:*:*:map/*",
-                "arn:aws:geo:*:*:tracker/*",
-                "arn:aws:geo:*:*:geofence-collection/*",
-                "arn:aws:geo:*:*:place-index/*"
-            ]
+            "Resource": "*"
         }
     ]
 }

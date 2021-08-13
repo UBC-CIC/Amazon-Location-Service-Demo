@@ -11,7 +11,6 @@ let map;
 let marker;
 let credentials;
 let locationService;
-let draw;
 const AWS = require("aws-sdk");
 const placeIndex = process.env.REACT_APP_PLACE_INDEX_NAME;
 const locationHelper = new LocationServiceHelper()
