@@ -1,34 +1,30 @@
-import React, { Component,Fragment } from 'react';
+import React, {Component} from 'react';
 import Amplify, {Auth} from "aws-amplify";
 import amplifyConfig from "../aws-exports";
-import Location from "aws-sdk/clients/location";
 import mapboxgl from 'mapbox-gl/dist/mapbox-gl.js'
 import TextField from "@material-ui/core/TextField";
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-import {MuiPickersUtilsProvider} from "@material-ui/pickers";
-import { DateTimePicker } from "@material-ui/pickers";
+import {DateTimePicker} from "@material-ui/pickers";
 import PropTypes from 'prop-types';
 
 import {
-    Accordion, AccordionDetails,
-    AccordionSummary,
     Button,
     Checkbox,
-    Container, DialogActions,
+    Container,
+    DialogActions,
     FormControl,
-    FormControlLabel, FormGroup, Grid,
+    FormControlLabel,
+    Grid,
     InputLabel,
-    MenuItem, Modal,
-    Select, withStyles
+    MenuItem,
+    Modal,
+    Select,
+    withStyles
 } from "@material-ui/core";
 import './MapPage.css'
-import GeojsonHelper from "../Helpers/GeojsonHelper";
-import MapboxDraw from "@mapbox/mapbox-gl-draw/index";
-import GeofenceHelper from "../Helpers/GeofenceHelper";
 import LocationServiceHelper from '../Helpers/LocationServiceHelper'
-import Geofence from "../Geofence/Geofence";
 import {Marker} from "mapbox-gl";
 import Typography from "@material-ui/core/Typography";
+
 let map;
 let credentials;
 let locationService;
@@ -133,13 +129,11 @@ class Navigation extends Component{
     }
 
     handleStateChange=(e)=>{
-        console.log(e)
         this.setState({
             [e.target.id]:e.target.value
         });
     }
     handleSearch=async () => {
-        console.log(this.state.departurePoint)
         this.searchCoords("departureCoords",this.state.departurePoint)
         this.searchCoords("destinationCoords",this.state.endingPoint)
 
@@ -166,7 +160,6 @@ class Navigation extends Component{
                     let marker
                     if(name==="departureCoords") marker=departurePtMarker
                     if(name==="destinationCoords") marker=destinationPtMarker
-                    console.log(response)
                     longitude = response.Summary.ResultBBox[0]
                     latitude = response.Summary.ResultBBox[1]
                     marker.setLngLat([longitude, latitude])
@@ -184,7 +177,6 @@ class Navigation extends Component{
         )
     }
     handleRoute=()=>{
-        console.log(this.state.destinationCoords)
         this.calculateRoute()
     }
     handleCheckBoxChange=(e)=>{
@@ -197,8 +189,6 @@ class Navigation extends Component{
     handleNumbersStateChange=(e)=>{
         const re = /^[0-9\b]+$/;
         if (e.target.value === '' || re.test(e.target.value)) {
-            console.log(e.target.value)
-
             this.setState({
                 [e.target.id]: e.target.value
             });
@@ -252,7 +242,6 @@ class Navigation extends Component{
             //     },
 
         }
-        console.log(params)
         locationService.calculateRoute(params, function (err, data) {
             if (err) console.log(err, err.stack); // an error occurred
             else {
@@ -261,7 +250,6 @@ class Navigation extends Component{
                 data.Legs[0].Geometry.LineString.map((item) => {
                     coordinates.push(item)
                 })
-                console.log(coordinates)
                 if(map.getLayer("route")) map.removeLayer("route")
                 if(map.getSource("route")) map.removeSource("route")
 

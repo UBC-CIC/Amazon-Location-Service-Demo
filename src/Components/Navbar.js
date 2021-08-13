@@ -1,6 +1,6 @@
 import React from 'react';
 import clsx from 'clsx';
-import { makeStyles, useTheme } from '@material-ui/core/styles';
+import {makeStyles, useTheme} from '@material-ui/core/styles';
 import Drawer from '@material-ui/core/Drawer';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
@@ -16,12 +16,11 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import {Button, Container} from "@material-ui/core";
-import GroupIcon from '@material-ui/icons/Group';
-import { Link } from "react-router-dom";
+import {Link} from "react-router-dom";
 import MapIcon from '@material-ui/icons/Map';
 import EditLocationIcon from '@material-ui/icons/EditLocation';
-import {AmplifySignOut} from "@aws-amplify/ui-react";
 import {Auth} from "aws-amplify";
+
 const drawerWidth = 240;
 
 const useStyles = makeStyles((theme) => ({

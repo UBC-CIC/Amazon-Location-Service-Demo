@@ -1,6 +1,6 @@
 import './ListGeofencePage.css'
 import {Button, Container} from "@material-ui/core";
-import React, { Component } from 'react';
+import React, {Component} from 'react';
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
@@ -72,7 +72,6 @@ class ListGeofencesPage extends Component{
                     geofenceArray.push(geofence)
                 }
             }
-            console.log(geofenceArray)
             this.setState({
                 geofenceArray:geofenceArray
             })

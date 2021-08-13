@@ -1,16 +1,12 @@
-import React, { Component } from 'react';
+import React, {Component} from 'react';
 import Amplify, {Auth} from "aws-amplify";
 import amplifyConfig from "../aws-exports";
-import Location from "aws-sdk/clients/location";
 import mapboxgl from 'mapbox-gl/dist/mapbox-gl.js'
 import TextField from "@material-ui/core/TextField";
 import {Button} from "@material-ui/core";
 import './MapPage.css'
-import GeojsonHelper from "../Helpers/GeojsonHelper";
-import MapboxDraw from "@mapbox/mapbox-gl-draw/index";
-import GeofenceHelper from "../Helpers/GeofenceHelper";
 import LocationServiceHelper from '../Helpers/LocationServiceHelper'
-import Geofence from "../Geofence/Geofence";
+
 let map;
 let marker;
 let credentials;
@@ -55,10 +51,6 @@ async function constructMap(container){
 function searchAndUpdateMapview(map, text){
     let longitude = -123.11335999999994;
     let latitude = 49.260380000000055;
-    if(text===""){
-        console.log("No input text");
-        return
-    }
     locationService.searchPlaceIndexForText(
         {
             IndexName: placeIndex,
@@ -115,15 +107,18 @@ class HomePage extends Component{
     }
 
     render(){
+        const disableButton=this.state.searchBarText.length===0
         return (
             <div id = {'mapPage'}>
+
                 <div id={"sbContainer"}>
                     <TextField id="textInput" label="Enter location" type="outlined" value={this.state.text} onChange={e=>this.updateInputText(e)}/>
-                    <Button id={'navBtn'} variant="contained" color="primary" style={{textTransform: 'none'}} onClick={this.handleSearch} >
+                    <Button disabled={disableButton} id={'navBtn'} variant="contained" color="primary" style={{textTransform: 'none'}} onClick={this.handleSearch} >
                         Search
                     </Button>
                 </div>
                 <div className='Map' ref={(x) => { this.container = x }}/>
+
             </div>
         )
     }

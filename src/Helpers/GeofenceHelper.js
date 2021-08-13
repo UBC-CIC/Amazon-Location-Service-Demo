@@ -1,8 +1,8 @@
-import GeojsonHelper from "./GeojsonHelper";
 import Geofence from "../Geofence/Geofence";
 import {Auth} from "aws-amplify";
 import amplifyConfig from "../aws-exports";
 import {Component} from "react";
+
 let AWS = require("aws-sdk");
 const geofenceCollection = process.env.REACT_APP_GEOFENCE_COLLECTION;
 

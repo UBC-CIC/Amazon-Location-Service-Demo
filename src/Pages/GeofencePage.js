@@ -1,7 +1,6 @@
-import React, { Component } from 'react';
+import React, {Component} from 'react';
 import Amplify, {Auth} from "aws-amplify";
 import amplifyConfig from "../aws-exports";
-import Location from "aws-sdk/clients/location";
 import mapboxgl from 'mapbox-gl/dist/mapbox-gl.js'
 import TextField from "@material-ui/core/TextField";
 import {Button, Collapse} from "@material-ui/core";
@@ -11,9 +10,7 @@ import MapboxDraw from "@mapbox/mapbox-gl-draw/index";
 import GeofenceHelper from "../Helpers/GeofenceHelper";
 import LocationServiceHelper from '../Helpers/LocationServiceHelper'
 import Geofence from "../Geofence/Geofence";
-import { withRouter } from "react-router-dom";
-import * as PropTypes from "prop-types";
-import CheckIcon from '@material-ui/icons/Check';
+import {withRouter} from "react-router-dom";
 import Alert from '@material-ui/lab/Alert';
 import IconButton from "@material-ui/core/IconButton";
 import CloseIcon from '@material-ui/icons/Close';
@@ -79,7 +76,6 @@ class GeofencePage extends Component{
             alertOpen:false,
             alertMessage:null
         };
-        console.log(this.props)
     }
 
     async componentDidMount() {
@@ -95,7 +91,7 @@ class GeofencePage extends Component{
         let geofenceId= this.state.geofenceIdText
         const polygon = draw.getAll()
         const regex = new XRegExp("^[-._\\s\\p{L}\\p{N}]+$")
-        if(geofenceId === "") alert("Geofence ID input is empty")
+        if(geofenceId === "") alert("Geofence name is empty")
         else if(polygon.features.length===0) alert('Please draw exactly 1 geofence on the map')
         else if(polygon.features.length>1) alert('Please decrease the number of geofence on the map to 1')
         //if geofenceID contains symbols other than -._
