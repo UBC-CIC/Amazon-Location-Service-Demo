@@ -1,0 +1,83 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: 'AWS::Serverless-2016-10-31'
+Description: >
+  "Location Demo Backend Resources"
+
+Parameters:
+  mapName:
+    Type: String
+    Default: LocationDemoMap
+    Description: Map source (Ensure you do not have a Map with this name already).
+  placeIndexName:
+    Type: String
+    Default: LocationDemoPlaceIndex
+    Description: LocationDemoPlaceIndex (Ensure you do not have a Place Index with this name already).
+  routeCalculatorName:
+    Type: String
+    Default: LocationDemoRouteCalculator
+    Description: Route Calculator name (Ensure you do not have a Route Calculator with this name already).
+  geofenceCollectionName:
+    Type: String
+    Default: LocationDemoGeofenceCollection
+    Description: Geofence Collection name (Ensure you do not have a Geofence Collection with this name already).
+    
+    
+Resources:
+    map:
+      Type: AWS::Location::Map
+      Properties: 
+        Configuration: 
+          Style: "VectorEsriNavigation"
+        Description: "Map created by Location Demo App"
+        MapName: !Ref mapName
+        PricingPlan: "RequestBasedUsage"
+    placeIndex:
+      Type: AWS::Location::PlaceIndex
+      Properties:
+        DataSource: "Esri"
+        DataSourceConfiguration: 
+          IntendedUse: "SingleUse"
+        Description: "Place Index created by Location Demo App"
+        IndexName: !Ref placeIndexName
+        PricingPlan: "RequestBasedUsage"
+    routeCalculator:
+      Type: AWS::Location::RouteCalculator
+      Properties: 
+        CalculatorName: !Ref routeCalculatorName
+        DataSource: "Esri"
+        Description: "Route Calculator created by Location Demo App"
+        PricingPlan: "RequestBasedUsage"
+    geofenceCollection:
+      Type: AWS::Location::GeofenceCollection
+      Properties: 
+        CollectionName: !Ref geofenceCollectionName
+        Description: "Geofence Collection created by Location Demo App"
+        PricingPlan: "RequestBasedUsage"
+
+
+      
+    mapNamePS:
+      Type: AWS::SSM::Parameter
+      Properties:
+        Name: "/locationDemo/mapName"
+        Type: String
+        Value: !Ref mapName
+    placeIndexNamePS:
+      Type: AWS::SSM::Parameter
+      Properties:
+        Name: "/locationDemo/placeIndexName"
+        Type: String
+        Value: !Ref placeIndexName
+    routeCalculatorNamePS:
+      Type: AWS::SSM::Parameter
+      Properties:
+        Name: "/locationDemo/routeCalculatorName"
+        Type: String
+        Value: !Ref routeCalculatorName
+    geofenceCollectionNamePS:
+      Type: AWS::SSM::Parameter
+      Properties:
+        Name: "/locationDemo/geofenceCollectionName"
+        Type: String
+        Value: !Ref geofenceCollectionName
+
