@@ -1,0 +1,41 @@
+version: 1
+backend:
+  phases:
+    build:
+      commands:
+        - '# Execute Amplify CLI with the helper script'
+        - amplifyPush --simple
+    postBuild:
+      commands:
+        - yum install -y jq
+        - export AWSREGION=$(aws configure get region)
+        - export PROJECT_NAME=$(cat ./amplify/.config/project-config.json | jq -r '.projectName')
+        - export S3DEPLOYMENTBUCKET=$(aws resourcegroupstaggingapi get-resources --tag-filters Key=user:Application,Values="${PROJECT_NAME}" --resource-type-filters s3 --query 'ResourceTagMappingList[*].[ResourceARN]' --output text | grep deployment | awk -F':::' '{print $2}')
+        - export AuthRoleName=$(cat "./amplify/#current-cloud-backend/amplify-meta.json" | jq -r '.providers.awscloudformation.AuthRoleName')
+        - export ACCOUNT_ID=$(aws sts get-caller-identity | jq -r '.Account')
+        - POLICYINVOKE=$(aws iam list-policies --scope Local --query 'Policies[*].PolicyName')
+        - if [[ ! " ${POLICYINVOKE[@]} " =~ "AmazonLocationAccessPolicy" ]]; then aws iam create-policy --policy-name AmazonLocationAccessPolicy --policy-document file://location-policy.json; fi
+        - aws iam attach-role-policy --policy-arn arn:aws:iam::${ACCOUNT_ID}:policy/AmazonLocationAccessPolicy --role-name ${AuthRoleName}
+        - export SAM_STACK=$(aws cloudformation describe-stacks --stack-name ${PROJECT_NAME}-Backend --query "Stacks[*].[StackName]" --output text)
+        - if [ -z "$SAM_STACK" ]; then sam deploy --s3-bucket ${S3DEPLOYMENTBUCKET} --region ${AWSREGION} --stack-name ${PROJECT_NAME}-Backend; fi
+        - export REACT_APP_MAP_NAME=$(aws ssm get-parameter --name /locationDemo/mapName --query Parameter.Value --output text)
+        - export REACT_APP_PLACE_INDEX_NAME=$(aws ssm get-parameter --name /locationDemo/placeIndexName --query Parameter.Value --output text)
+        - export REACT_APP_ROUTE_CALCULATOR=$(aws ssm get-parameter --name /locationDemo/routeCalculatorName --query Parameter.Value --output text)
+        - export REACT_APP_GEOFENCE_COLLECTION=$(aws ssm get-parameter --name /locationDemo/geofenceCollectionName --query Parameter.Value --output text)
+
+frontend:
+  phases:
+    preBuild:
+      commands:
+
+        - yarn install
+    build:
+      commands:
+        - yarn run build
+  artifacts:
+    baseDirectory: build
+    files:
+      - '**/*'
+  cache:
+    paths:
+      - node_modules/**/*
