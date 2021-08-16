@@ -24,6 +24,20 @@ Follow these instructions to deploy the frontend:
 Cognito is used for user authentication. Users will need to input their email address and a password to create an account.
 After account creation, users will need to verify their account by inputting the 6-digit verification code that was sent to their provided email address before being able to log in to the system.
 
+1. Create an account when the application finished building
+
+![SignIn](./images/SignIn.png)
+
+2. Fill in the following fields
+
+![CreateAccount](./images/CreateAccount.png)
+
+3. Enter the 6 digit verification code by checking your email
+   
+![ConfirmationCode](./images/ConfirmationCode.png)
+
+4. After hitting the confirm button, the user will be redirected to the application's home page
+
 ## Post Deployment
 After deploying the solution, the developer should narrow down the IAM policies associated with the 
 Amazon Location Service resources in this demo in order to make it more secure.

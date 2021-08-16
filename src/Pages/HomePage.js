@@ -85,7 +85,6 @@ class HomePage extends Component{
         this.state = {
             searchBarText: "",
         };
-        console.log(this.props)
     }
 
     async componentDidMount() {
