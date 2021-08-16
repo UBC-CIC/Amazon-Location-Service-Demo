@@ -108,12 +108,12 @@ class Navigation extends Component{
             departNow:true,
             avoidFerries:false,
             avoidTolls:false,
-            height: null,
-            length: null,
-            dimensionUnit: null,
-            width: null,
-            weightUnit:null,
-            weight:null,
+            height: '',
+            length: '',
+            dimensionUnit: '',
+            width: '',
+            weightUnit:'',
+            weight:'',
             modalOpen:false
         };
     }
@@ -292,8 +292,8 @@ class Navigation extends Component{
     render(){
         const disableSearch = !(this.state.departurePoint&&this.state.endingPoint)
         const{height,weight,length,width,dimensionUnit,weightUnit} = this.state
-        const checkTruck = this.state.travelMode==="Truck"&&height!==null&&weight!==null&&length!==null&&
-            width!==null&&dimensionUnit!==null&&weightUnit!==null
+        const checkTruck = this.state.travelMode==="Truck"&&height!==''&&weight!==''&&length!==''&&
+            width!==''&&dimensionUnit!==''&&weightUnit!==''
         const otherTravelModes= this.state.travelMode==="Walking"||this.state.travelMode==="Car"
         const disabled= !((this.state.travelMode==="Truck")?checkTruck:otherTravelModes)
         const { classes } = this.props;
